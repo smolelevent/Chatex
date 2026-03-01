@@ -6,24 +6,19 @@ header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
 use PHPMailer\PHPMailer\PHPMailer; //PHPMailer email küldő csomag
-use PHPMailer\PHPMailer\Exception;
-use Random\RandomException;
-
-//kivétel kezelés (ha rossz az email valahogy)
+use PHPMailer\PHPMailer\Exception; //kivétel kezelés (ha rossz az email valahogy)
 
 require_once __DIR__ . "/../db.php"; //adatbázis kapcsolat
 require_once __DIR__ . '/../vendor/autoload.php'; //csomagok betöltéséért
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($userData["email"])) {
+if (!isset($data["email"])) {
     echo json_encode(["success" => false, "message" => "Email megadása kötelező."]);
     exit();
 }
 
-$email = $userData["email"];
+$email = $data["email"];
 
 //megnézzük hogy a megadott email címmel létezik ilyen felhasználó és eltároljuk az id-ét!
 $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
@@ -36,11 +31,7 @@ if ($result->num_rows > 0) {
     $userId = $row["id"];
 
     //jelszó helyreállítási token generálása és lejárati idő beállítása
-    try {
-        $token = bin2hex(random_bytes(20));
-    } catch (RandomException $e) {
-        echo json_encode(["success" => false, "message" => "Token generálási hiba: " . $e->getMessage()]);
-    } //egy random 20 karakteres sorozatot generálunk
+    $token = bin2hex(random_bytes(20)); //egy random 20 karakteres sorozatot generálunk
     $expires = date("Y-m-d H:i:s", strtotime("+15 minutes")); //ami 15 percig lesz érvényes!
 
     //majd elmentjük az adott felhasználó adatai közé a token-t és a email lejárati idejét!
@@ -72,7 +63,7 @@ if ($result->num_rows > 0) {
         $mail->addAddress($email); //az email mező alapján továbbítjuk oda amit a felhasználó megadott!
 
         //E-mail tartalma
-        $mail->isHTML();
+        $mail->isHTML(true);
         $mail->Subject = "Jelszó visszaállítás";
         $mail->Body = "<h1>Kattints az alábbi linkre a jelszó visszaállításához:</h1>
                        <p><a href='$resetLink' target='_blank'>$resetLink</a></p>
@@ -86,7 +77,7 @@ if ($result->num_rows > 0) {
             echo json_encode(["success" => false, "message" => "E-mail küldése sikertelen."]);
         }
     } catch (Exception $e) {
-        echo json_encode(["success" => false, "message" => "E-mail hiba: $mail->ErrorInfo"]);
+        echo json_encode(["success" => false, "message" => "E-mail hiba: {$mail->ErrorInfo}"]);
     }
 } else {
     //nem volt olyan felhasználó akinek a megadott email címe lenne!

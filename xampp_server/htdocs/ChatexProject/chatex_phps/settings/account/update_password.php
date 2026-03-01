@@ -7,17 +7,15 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($userData['user_id']) || !isset($userData['password'])) {
+if (!isset($data['user_id']) || !isset($data['password'])) {
     echo json_encode(["status" => "error", "message" => "Hiányzó adatok!"]);
     exit();
 }
 
-$user_id = intval($userData['user_id']);
-$password = trim($userData['password']);
+$user_id = intval($data['user_id']);
+$password = trim($data['password']);
 
 //Hasheljük a jelszót biztonságosan
 $password_hash = password_hash($password, PASSWORD_DEFAULT);

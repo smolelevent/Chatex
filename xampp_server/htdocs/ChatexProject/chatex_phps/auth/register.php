@@ -7,11 +7,12 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../db.php"; //Adatbázis kapcsolat
 
+
 function normalizeEmail($email)
 //ez a metódus engedélyezi a több felhasználó létrehozását ugyanazzal a Gmail-es email címmel!
 {
     //a pontokat és a + utáni részt eltávolítjuk
-    if (str_contains($email, '@gmail.com')) {
+    if (strpos($email, '@gmail.com') !== false) {
         $emailParts = explode('@', $email);
         $localPart = str_replace('.', '', $emailParts[0]); // Pontok eltávolítása
         $localPart = explode('+', $localPart)[0]; // + utáni rész eltávolítása
@@ -20,11 +21,8 @@ function normalizeEmail($email)
     return $email; //más e-mail szolgáltatóknál nem változtatunk
 }
 
-$conn = getDbConnection();
-
 //a beérkező adatokat elmentjük,
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$userData = json_decode(file_get_contents("php://input"), true);
 
 //majd változókra bontjuk!
 $username = trim($userData['username']);

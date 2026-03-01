@@ -11,10 +11,8 @@ require_once __DIR__ . '/../db.php'; //Adatbázis kapcsolat
 use Firebase\JWT\JWT; //token kezelő
 use Firebase\JWT\Key; //kulcs kezelő (mivel dekódolni kell, ha visszalép a felhasználó)
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
-$token = $userData["token"] ?? "";
+$data = json_decode(file_get_contents("php://input"), true);
+$token = $data["token"] ?? "";
 
 if (!$token) {
     echo json_encode(["success" => false, "message" => "Hiányzó token!"]);
@@ -39,4 +37,5 @@ try {
     echo json_encode(["success" => false, "message" => "Érvénytelen token: " . $e->getMessage()]);
 }
 
+//$stmt->close(); <- ez okozta a Kapcsolati hibát a token validálásakor mivel nincs ilyen változó a fájlban!
 $conn->close();

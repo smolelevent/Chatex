@@ -5,19 +5,17 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . "/../../db.php";
+require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($userData['email']) || !isset($userData['user_id'])) {
+if (!isset($data['email']) || !isset($data['user_id'])) {
     echo json_encode(["status" => "error", "message" => "Hiányzó adatok"]);
     exit();
 }
 
-$user_id = intval($userData['user_id']);
-$email = trim($userData['email']);
+$user_id = intval($data['user_id']);
+$email = trim($data['email']);
 
 //Email validálás PHP oldalon is!
 if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {

@@ -681,7 +681,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _cacheAllPermanentImages() {
     // AppBar profilkép
-    //TODO: base64
     if (widget.profileImage.startsWith("data:image/svg+xml;base64,")) {
       _cachedAppbarSvgBytes = base64Decode(widget.profileImage.split(",")[1]);
     } else if (widget.profileImage.startsWith("data:image/")) {

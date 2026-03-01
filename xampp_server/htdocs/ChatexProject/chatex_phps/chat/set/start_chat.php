@@ -7,18 +7,17 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($userData["sender_id"]) || !isset($userData["receiver_id"])) {
+if (!isset($data["sender_id"]) || !isset($data["receiver_id"])) {
     echo json_encode(["success" => false, "message" => "Hiányzó adatok!"]);
     exit;
 }
 
 //két felhasználó id-ja akikkel létrehozzuk a chatet!
-$senderId = intval($userData["sender_id"]);
-$receiverId = intval($userData["receiver_id"]);
+$senderId = intval($data["sender_id"]);
+$receiverId = intval($data["receiver_id"]);
+
 //nem csoportként hozzuk létre (egy bool változó felel azért)
 $insertChat = $conn->prepare("INSERT INTO chats (is_group) VALUES (0)");
 $insertChat->execute();

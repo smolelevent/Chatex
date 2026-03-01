@@ -351,7 +351,6 @@ class _StartChatState extends State<StartChat> {
     Widget profilePicture;
 
     if (receivedProfilePicture != null && receivedProfilePicture.isNotEmpty) {
-      //TODO: base64
       if (receivedProfilePicture.startsWith("data:image/svg+xml;base64,")) {
         final svgString =
             utf8.decode(base64Decode(receivedProfilePicture.split(",")[1]));

@@ -7,16 +7,14 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($userData["request_id"])) {
+if (!isset($data["request_id"])) {
     echo json_encode(["success" => false, "message" => "Hiányzó adat!"]);
     exit;
 }
 
-$request_id = intval($userData["request_id"]);
+$request_id = intval($data["request_id"]);
 
 //töröljük a barátkérést a kérések táblából ha valamelyik oldalt el lett utasítva (jelenleg ennek nincsen visszajelzése...)
 $query = "DELETE FROM friend_requests WHERE id = ?";

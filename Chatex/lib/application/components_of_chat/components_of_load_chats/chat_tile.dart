@@ -66,7 +66,6 @@ class ChatTile extends StatelessWidget {
   Widget _buildProfileImage(String imageString, String isOnline, int signedIn) {
     Widget imageWidget;
 
-    //TODO: base64
     if (imageString.startsWith("data:image/svg+xml;base64,")) {
       final svgBytes = base64Decode(imageString.split(",")[1]);
       imageWidget = SvgPicture.memory(

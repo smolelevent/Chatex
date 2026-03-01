@@ -510,7 +510,6 @@ class _PeopleState extends State<People> {
     //base64 alapján
     Widget profileImage;
 
-    //TODO: base64
     if (profilePicture != null && profilePicture.isNotEmpty) {
       if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
         final svgString =

@@ -7,14 +7,12 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . '/../../db.php'; //adatbázis kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-$chatId = intval($userData['chat_id']);
+$chatId = intval($data['chat_id']);
 
 //minden üzenetet lekérünk ami a chat_id-hez tartozik, csökkenő sorrendben! (last message miatt)
-$query = $conn->prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY sent_at");
+$query = $conn->prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY sent_at ASC");
 $query->bind_param("i", $chatId);
 $query->execute();
 $result = $query->get_result();

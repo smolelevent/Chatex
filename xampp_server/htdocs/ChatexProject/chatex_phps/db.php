@@ -1,28 +1,14 @@
 <?php
-// Adatbázis kapcsolódási adatok
-// Fejlesztéshez jó, de éles környezetben hozz létre dedikált felhasználót!
-const DB_HOST = 'localhost';
-const DB_USER = 'root';
-const DB_PASS = '';
-const DB_NAME = 'dbchatex';
+//ez a php felel az adatbázis kapcsolat létesítéséért, $conn változón keresztűl kezeljük
+$serverIP = "localhost";
+$serverUsername = "root";
+$serverPassword = "";
+$dbname = "dbchatex";
 
-function getDbConnection(): mysqli
-{
-    // A 'static' kulcsszó biztosítja, hogy a kapcsolat csak egyszer jöjjön létre
-    // egy kérés során, még ha a függvényt többször is meghívják.
-    static $conn = null;
+$conn = new mysqli($serverIP, $serverUsername, $serverPassword, $dbname);
 
-    if ($conn === null) {
-        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-        try {
-            $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
-            $conn->set_charset("utf8mb4");
-        } catch (mysqli_sql_exception $e) {
-            error_log('Adatbázis kapcsolódási hiba: ' . $e->getMessage());
-            http_response_code(503); // Service Unavailable
-            echo json_encode(['message' => 'A szolgáltatás átmenetileg nem elérhető.']);
-            exit();
-        }
-    }
-    return $conn;
+if ($conn->connect_error) {
+    http_response_code(500); // Belső szerverhiba
+    echo json_encode(["message" => "Adatbázis kapcsolat sikertelen: " . $conn->connect_error]);
+    exit();
 }

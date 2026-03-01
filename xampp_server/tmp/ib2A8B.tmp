@@ -1,0 +1,1 @@
+`dbchatex`.`messages`, CONSTRAINT `receiver_id_connection_users_id` FOREIGN KEY (`receiver_id`) REFERENCES `users` (`id`) ON DELETE CASCADE

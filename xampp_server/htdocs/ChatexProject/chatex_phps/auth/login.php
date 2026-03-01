@@ -10,25 +10,7 @@ require_once __DIR__ . '/../vendor/autoload.php'; //Composer csomag használata
 
 use Firebase\JWT\JWT; //Firebase által fejlesztett felhasználói token generálás
 
-// Adatbázis kapcsolat lekérése a db.php-ban definiált függvényen keresztül
-$conn = getDbConnection();
-
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
-
-// Hibaellenőrzés a JSON dekódolására
-if (json_last_error() !== JSON_ERROR_NONE || !is_array($userData)) {
-    http_response_code(400); // Bad Request
-    echo json_encode(["message" => "Érvénytelen JSON bemenet."]);
-    exit();
-}
-
-// Ellenőrizzük, hogy az 'email' és 'password' mezők léteznek-e
-if (!isset($userData['email']) || !isset($userData['password'])) {
-    http_response_code(400); // Bad Request
-    echo json_encode(["message" => "Hiányzó 'email' vagy 'password' mező."]);
-    exit();
-}
+$userData = json_decode(file_get_contents("php://input"), true);
 
 $email = trim($userData['email']);
 $password = trim($userData['password']);
@@ -59,7 +41,7 @@ $user = $result->fetch_assoc();
 
 //JWT token létrehozása az autentikációhoz
 $issued_at = time();
-$expiration_time = $issued_at + (60 * 60 * 24); //24 óráig érvényes //TODO: törlés
+$expiration_time = $issued_at + (60 * 60 * 24); //24 óráig érvényes
 $payload = [
     "iat" => $issued_at,
     "exp" => $expiration_time,

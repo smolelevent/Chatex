@@ -144,7 +144,6 @@ class _AccountSettingState extends State<AccountSetting> {
   }
 
   void _cacheProfileImage() {
-    //TODO: base64
     //cacheljük a profilképet hogy ne "pislálkoljon"
     if (_profilePicture!.startsWith("data:image/svg+xml;base64,")) {
       _cachedSvgBytes = base64Decode(_profilePicture!.split(",")[1]);
@@ -409,7 +408,6 @@ class _AccountSettingState extends State<AccountSetting> {
       //base64-es kódolás amihez hozzátesszük a mimeType-ot
       final base64 = base64Encode(bytes);
 
-      //TODO: base64
       String mimeType;
       switch (fileExtension) {
         case "svg":

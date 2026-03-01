@@ -148,7 +148,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
               regex: RegExp(
-                  r"^[a-zA-Z0-9!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                  r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
                   unicode: true),
               errorText: widget.language == "Magyar"
                   ? "Az email cím érvénytelen!"

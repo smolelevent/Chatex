@@ -15,7 +15,7 @@ import 'dart:convert';
 
 //AZ XAMPP-OT futtatni kell használat előtt (ha nem indul el akkor setup_xampp.bat-ot kell futtatni!), illetve...
 //A Websocket Server-t is futtatni kell indítás előtt (a terminálon keresztűl a megadott elérési úttal és paranccsal!)
-//parancs: xampp_server\htdocs\ChatexProject\chatex_phps php server_run.php
+//parancs: xampp_server\htdocs\ChatexProject\chatex_phps> php server_run.php
 
 //GLOBÁLIS METÓDUSOK ELEJE ------------------------------------------------------------------------
 Future<void> main() async {
@@ -26,8 +26,8 @@ Future<void> main() async {
   //biztosan hogy létre legyen hozva!
   final WidgetsBinding widgetsBinding =
       WidgetsFlutterBinding.ensureInitialized();
-  //ahhoz hogy megfelelő időben, jelenjen meg a splash screen (az alkalmazás indításakor),
-  //ahhoz a widgetsBinding-ot biztosítani kell hogy inicializált legyen!!
+  //ahoz hogy megfelelő időben, jelenjen meg a splash screen (az alkalmazás indításakor),
+  //ahoz a widgetsBinding-ot biztosítani kell hogy inicializált legyen!!
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
 
   //inicializáljuk közben a kettő osztályunkat: a Preferences-t (lokális tárolás)

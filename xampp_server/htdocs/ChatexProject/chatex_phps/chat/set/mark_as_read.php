@@ -7,12 +7,10 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . '/../../db.php'; //kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-$chatId = intval($userData["chat_id"]);
-$userId = intval($userData["user_id"]);
+$chatId = intval($data["chat_id"]);
+$userId = intval($data["user_id"]);
 
 //csak olyan üzeneteket frissítsünk amiket még nem "láttamoztak le"
 $stmt = $conn->prepare("

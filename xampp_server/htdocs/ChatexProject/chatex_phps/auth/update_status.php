@@ -7,12 +7,10 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../db.php"; //Adatbázis kapcsolat
 
-$conn = getDbConnection();
-$input = file_get_contents("php://input");
-$userData = json_decode($input, true);
+$data = json_decode(file_get_contents("php://input"), true);
 
-$userId = intval($userData["user_id"]);
-$newStatus = trim($userData["status"]);
+$userId = intval($data["user_id"]);
+$newStatus = trim($data["status"]);
 
 //megnézzük hogy a megadott új státusz engedélyezett e egyáltalán és csak akkor megyünk tovább!
 $allowed = ["online", "offline"];

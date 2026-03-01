@@ -23,7 +23,6 @@ class GroupTile extends StatelessWidget {
 //HÁTTÉR FOLYAMATOK ELEJE -------------------------------------------------------------------------
 
   Widget _buildProfileImage(String imageString) {
-    //TODO: base64
     //az összes képet base64-es kódolással értelmezzük
     if (imageString.startsWith("data:image/svg+xml;base64,")) {
       final svgBytes = base64Decode(imageString.split(",")[1]);
