@@ -7,15 +7,17 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data['profile_picture']) || !isset($data['user_id'])) {
+if (!isset($userData['profile_picture']) || !isset($userData['user_id'])) {
     echo json_encode(["status" => "error", "message" => "Hiányzó adatok"]);
     exit();
 }
 
-$profile_picture = $data['profile_picture'];
-$user_id = intval($data['user_id']); //biztonságos integer konverzió
+$profile_picture = $userData['profile_picture'];
+$user_id = intval($userData['user_id']); //biztonságos integer konverzió
 
 $query = "UPDATE users SET profile_picture = ? WHERE id = ?";
 $stmt = $conn->prepare($query);

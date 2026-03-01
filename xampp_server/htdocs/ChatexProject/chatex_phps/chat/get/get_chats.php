@@ -7,15 +7,17 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //adatbázis kapcsolat (fontos hogy megfelelő mappába keressük!)
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data["user_id"])) {
+if (!isset($userData["user_id"])) {
     http_response_code(400);
     echo json_encode(["error" => "Hiányzó user azonosító!"]);
     exit;
 }
 
-$user_id = intval($data["user_id"]);
+$user_id = intval($userData["user_id"]);
 
 //a felhasználó id-ja alapján lekérjük a beszélgetéseit! (külön kezelve az utolsó üzenet típusát lásd: SELECT CASE....)
 //aliasok és 2 tábla bevonásával kérjük le a beszélgetések összes adatát

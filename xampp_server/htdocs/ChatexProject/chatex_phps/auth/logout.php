@@ -7,15 +7,17 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . '/../db.php'; //Adatbázis kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data["user_id"])) {
+if (!isset($userData["user_id"])) {
     http_response_code(400);
     echo json_encode(["success" => false, "message" => "Hiányzó user_id!"]);
     exit;
 }
 
-$userId = intval($data["user_id"]);
+$userId = intval($userData["user_id"]);
 
 //Csak a belépést frissítjük az állapotot nem, mert egyénileg beállított offline is lehet a felhasználó
 $query = "UPDATE users SET signed_in = 0, last_seen = NOW() WHERE id = ?";

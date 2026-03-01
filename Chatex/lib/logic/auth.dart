@@ -250,6 +250,7 @@ class AuthService {
   }
 
   //ez a metódus felel a jelszó helyreállításáért ha a felhasználó elfelejtett volna jelszavát!
+  //TODO: hiba: 200
   Future<void> resetPassword(
       {required TextEditingController email,
       required BuildContext context,

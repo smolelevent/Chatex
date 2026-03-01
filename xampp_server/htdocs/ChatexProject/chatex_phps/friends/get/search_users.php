@@ -7,9 +7,11 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if ($data['query'] == " ") {
+if ($userData['query'] == " ") {
     //az üres karakterek keresését nem kezeljük
     echo json_encode(["error" => "Hibás lekérdezés!"]);
     http_response_code(400);
@@ -17,7 +19,7 @@ if ($data['query'] == " ") {
 }
 
 //elmentjük a keresendő szöveget amit %-ek használatával nézzük hogy van e előtte vagy utána karakter!
-$query = "%" . $conn->real_escape_string($data['query']) . "%";
+$query = "%" . $conn->real_escape_string($userData['query']) . "%";
 
 //limitáljuk 10 eredményre (nincsen annyi felhasználó, és könnyebb kezelni!)
 $sql = "SELECT id, username, profile_picture FROM users WHERE username LIKE ? LIMIT 10";

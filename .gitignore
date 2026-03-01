@@ -1,0 +1,89 @@
+# ===================================================================
+# Általános, minden projektre érvényes beállítások
+# ===================================================================
+
+# IDE és szerkesztő specifikus fájlok
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+nbproject/
+
+# Operációs rendszer által generált fájlok
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Log fájlok
+*.log
+logs/
+*.log.*
+
+# ===================================================================
+# Flutter Projekt (Chatex/)
+# ===================================================================
+# Ezeket a fájlokat és mappákat a "flutter run" és "flutter pub get"
+# parancsok automatikusan generálják a forráskódból.
+
+# Dart/Pub kapcsolatos
+Chatex/.dart_tool/
+Chatex/.packages
+Chatex/.pub-cache/
+
+# Build mappa (lefordított, futtatható app)
+Chatex/build/
+
+# Platform-specifikus generált fájlok és függőségek
+Chatex/ios/Pods/
+Chatex/ios/Flutter/App.framework
+Chatex/ios/Flutter/engine.framework
+Chatex/ios/.symlinks/
+Chatex/ios/Runner/GeneratedPluginRegistrant.*
+
+Chatex/android/.gradle/
+Chatex/android/app/build/
+Chatex/android/app/app.iml
+Chatex/android/app/.idea/
+
+# Érzékeny vagy helyi konfigurációs fájlok
+Chatex/android/key.properties
+Chatex/android/local.properties
+Chatex/ios/Flutter/Generated.xcconfig
+
+# ===================================================================
+# PHP Backend & XAMPP Szerver (xampp_server/)
+# ===================================================================
+# A cél, hogy csak a saját PHP forráskódodat commitold (ChatexProject),
+# és ne a teljes XAMPP szerver környezetet.
+
+# Explicit módon figyelmen kívül hagyjuk a felesleges XAMPP mappákat.
+# Ez a megközelítés megbízhatóbb, mint a "mindent tilt, majd engedélyez" módszer.
+xampp_server/apache/
+xampp_server/cgi-bin/
+xampp_server/filezillaftp/
+xampp_server/licenses/
+xampp_server/mailoutput/
+xampp_server/mailtodisk/
+xampp_server/mercury/
+xampp_server/mysql/
+xampp_server/php/
+xampp_server/phpMyAdmin/
+xampp_server/sendmail/
+xampp_server/tmp/
+xampp_server/tomcat/
+xampp_server/webalizer/
+
+# A htdocs mappában lévő alapértelmezett XAMPP fájlokat és mappákat is ignoráljuk
+xampp_server/htdocs/*
+# De a ChatexProject mappát NE hagyd figyelmen kívül (ezzel "visszakapcsoljuk")
+!xampp_server/htdocs/ChatexProject/
+
+# Végül, a projektmappádon belül hagyd figyelmen kívül a Composer függőségeket.
+# A 'vendor' mappát a 'composer install' parancs hozza létre.
+# A 'composer.json' és 'composer.lock' fájlokat kell commitolni helyette.
+xampp_server/htdocs/ChatexProject/chatex_phps/vendor/

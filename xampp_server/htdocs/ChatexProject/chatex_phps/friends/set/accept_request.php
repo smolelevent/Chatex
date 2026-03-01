@@ -7,14 +7,16 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data["request_id"])) {
+if (!isset($userData["request_id"])) {
     echo json_encode(["success" => false, "message" => "Hiányzó adat!"]);
     exit;
 }
 
-$request_id = intval($data["request_id"]);
+$request_id = intval($userData["request_id"]);
 
 //lekérjük az adott kéréshez szükséges felhasználókat (ki küldte kinek!)
 $query = "SELECT sender_id, receiver_id FROM friend_requests WHERE id = ?";

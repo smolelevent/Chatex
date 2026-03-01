@@ -7,14 +7,16 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data["user_id"])) {
+if (!isset($userData["user_id"])) {
     echo json_encode(["success" => false, "message" => "Hiányzó felhasználói azonosító!"]);
     exit;
 }
 
-$user_id = intval($data["user_id"]);
+$user_id = intval($userData["user_id"]);
 
 //függőben lévő barátjelölések számolása, amit Dart oldalon egy karikába jelenítjük meg hogy a felhasználó észre vegye!
 //csak olyanokat számolunk amik függőben vannak (pending)

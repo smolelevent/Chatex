@@ -3,6 +3,8 @@
 
 require_once __DIR__ . "/../db.php";
 
+$conn = getDbConnection();
+
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     //post kérés esetében (amikor submit-oljuk a Formot) alkalmazzuk a REST API header-eket
     header("Content-Type: application/json");
@@ -51,7 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 }
 
 //Ha nem POST kérés (form által küldött adat), hanem GET (az oldal megjelenik) akkor:
-
 $token = $_GET["token"] ?? '';
 if (!$token) {
     die("Érvénytelen token.");
@@ -139,7 +140,7 @@ echo '<!DOCTYPE html>
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 90%;
             max-width: 400px;
@@ -192,18 +193,19 @@ echo '<!DOCTYPE html>
             border-radius: 5px;
             font-size: 16px;
             cursor: pointer;
-            background-color: grey;
+            background-color: rgb(124, 76, 255);
             color: white;
             margin-top: 10px;
-        }
-
-
-        input[type=submit] {
-            background-color: rgb(124, 76, 255);
+            transition: background-color 0.3s;
         }
 
         input[type=submit]:hover {
             background-color: purple;
+        }
+
+        input[type=submit]:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -212,20 +214,21 @@ echo '<!DOCTYPE html>
     <div class="container">
         <h2>Új jelszó megadása</h2>
         <p><b>' . htmlspecialchars($userEmail) . '</b> címre</p>
-        <form action="" method="POST">
+        <form action="" method="POST" id="resetForm">
+            <input type="hidden" name="token" value="' . htmlspecialchars($token) . '">
             <div class="input-container">
-                <input type="password" id="password" placeholder="Új jelszó" required>
+                <input type="password" id="password" name="new_password" placeholder="Új jelszó" required>
                 <span class="toggle-password" id="visible1" onclick="togglePassword()">◉</span>
             </div>
             <p class="error" id="passwordError">A jelszónak 8-20 karakter hosszúnak kell lennie, tartalmaznia kell legalább 1 kisbetűt, 1 nagybetűt és 1 számot!</p>
 
             <div class="input-container">
-                <input type="password" id="confirmPassword" placeholder="Új jelszó megerősítése" required>
+                <input type="password" id="confirmPassword" name="confirm_password" placeholder="Új jelszó megerősítése" required>
                 <span class="toggle-password" id="visible2" onclick="togglePassword()">◉</span>
             </div>
             <p class="error" id="confirmPasswordError">A jelszavak nem egyeznek!</p>
 
-            <input type="submit" id="resetButton" value="Jelszó helyreállítása">
+            <input type="submit" id="resetButton" value="Jelszó helyreállítása" disabled>
         </form>
     </div>
 
@@ -275,50 +278,45 @@ echo '<!DOCTYPE html>
             }
 
             if (isValid) {
-                resetButton.classList.add("active");
                 resetButton.removeAttribute("disabled");
             } else {
-                resetButton.classList.remove("active");
                 resetButton.setAttribute("disabled", "true");
             }
         }
 
         document.getElementById("password").addEventListener("input", validatePassword);
         document.getElementById("confirmPassword").addEventListener("input", validatePassword);
+        document.getElementById("resetForm").addEventListener("submit", function(event) {
+            event.preventDefault(); // Megakadályozza az űrlap hagyományos küldését
 
-        document.getElementById("resetButton").addEventListener("click", function(event) {
-            event.preventDefault(); // Megakadályozza az oldal újratöltését
+            const form = event.target;
+            const formData = new FormData(form);
+            const password = formData.get("new_password");
+            const confirmPassword = formData.get("confirm_password");
 
-            const password = document.getElementById("password").value;
-            const confirmPassword = document.getElementById("confirmPassword").value;
-            const token = ' . json_encode($token) . ';
-
-            if (password !== confirmPassword) {
+            if (password !== confirmPassword) { // Extra validáció küldés előtt
                 alert("A jelszavak nem egyeznek!");
                 return;
             }
 
             fetch(window.location.href, {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/x-www-form-urlencoded"
-                    },
-                    body: new URLSearchParams({
-                        "token": token,
-                        "new_password": password
-                    })
+                    body: formData
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
                         alert("Sikeres jelszóváltoztatás! Az oldal most bezáródik.");
-                        window.close(); // Bezárja az oldalt
+                        // A window.close() csak akkor működik, ha az ablakot is script nyitotta meg.
+                        // Egy jobb megoldás egy "sikeres" oldalra irányítani, vagy a tartalom cseréje.
+                        document.body.innerHTML = "<div class=\'container\'><h2>A jelszó sikeresen megváltozott.</h2><p>Bezárhatja ezt az ablakot.</p></div>";
                     } else {
                         alert("Hiba történt: " + data.message);
                     }
                 })
                 .catch(error => {
                     console.error("Hálózati hiba:", error);
+                    alert("Hiba történt a jelszó frissítése során. Próbálja újra később.");
                 });
         });
     </script>

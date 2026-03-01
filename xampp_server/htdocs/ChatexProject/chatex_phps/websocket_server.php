@@ -7,7 +7,9 @@
 //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 require __DIR__ . '/vendor/autoload.php';
-require __DIR__ . '/db.php';
+require_once __DIR__ . '/db.php'; // require_once a biztonság kedvéért
+
+//TODO: képek javítása nem küldi el és lezárja a kapcsolatot amikor fotózik,
 
 //Ratchet használata a websocket szerver implementálásához
 use Ratchet\MessageComponentInterface;
@@ -15,18 +17,18 @@ use Ratchet\ConnectionInterface;
 
 class ChatServer implements MessageComponentInterface
 {
-    private $db;
-    protected $clients;
-    protected $userMap;
+    private mysqli $db;
+    protected SplObjectStorage $clients;
+    protected SplObjectStorage $userMap;
 
     //ez a metódus a websocket-et használó Dart-ok felé küldi vissza a status_update típusú üzeneteket!
-    private function broadcastStatus(int $userId, string $status, ?string $lastSeen)
+    private function broadcastStatus(int $userId, string $status, ?string $lastSeen): void
     {
-
         $stmt = $this->db->prepare("SELECT signed_in FROM users WHERE id = ?");
         $stmt->bind_param("i", $userId);
         $stmt->execute();
-        $signedIn = $stmt->get_result()->fetch_assoc()['signed_in'] ?? 0;
+        $userRow = $stmt->get_result()->fetch_assoc();
+        $signedIn = $userRow['signed_in'] ?? 0;
 
         $payload = [
             'message_type' => 'status_update',
@@ -48,10 +50,10 @@ class ChatServer implements MessageComponentInterface
     //felépíti a websocket servert
     public function __construct()
     {
-        global $conn;
-        $this->db = $conn;
-        $this->clients = new \SplObjectStorage;
-        $this->userMap = new \SplObjectStorage;
+        // Itt már nem global $conn-t használunk, hanem a db.php függvényét
+        $this->db = getDbConnection();
+        $this->clients = new SplObjectStorage;
+        $this->userMap = new SplObjectStorage;
 
         if ($this->db->connect_error) {
             echo "DB hiba: " . $this->db->connect_error . "\n";
@@ -61,253 +63,267 @@ class ChatServer implements MessageComponentInterface
     }
 
     //websocket kapcsolat nyításakor ez történjen
-    public function onOpen(ConnectionInterface $conn)
+    public function onOpen(ConnectionInterface $conn): void
     {
+        /** @var ConnectionInterface|stdClass $conn */
         $this->clients->attach($conn);
-        echo "Új kapcsolat: {$conn->resourceId}\n";
+        echo "Új kapcsolat: $conn->resourceId\n";
     }
 
     //ha üzenet érkezik a websocket szerverre akkor típus alapján különböző üzeneteket küldünk,
     //mind az adatbázis felé, mind a Dart felé!
-    public function onMessage(ConnectionInterface $from, $msg)
+    public function onMessage(ConnectionInterface $from, $msg): void
     {
+        /** @var ConnectionInterface|stdClass $from */
         echo "Üzenet: $msg\n";
 
         $data = json_decode($msg, true);
-        if (!$data) {
-            echo "Hibás üzenet! \n";
+        if (!$data || !isset($data['message_type'])) {
+            echo "❌ Hibás üzenet vagy hiányzó típus!\n";
             return;
         }
 
         $type = $data['message_type'];
-        if (!isset($data['message_type'])) {
-            echo "❌ Üzenetben nincs type!\n";
-            return;
-        }
-
         echo "típus: " . $type . "\n";
 
         try {
-            $messageId = null;
-
             switch ($type) {
                 case 'auth':
-                    if (!isset($data['user_id'])) {
-                        echo "❌ Auth hiba: nincs user_id!\n";
-                        return;
-                    }
-
-                    $userId = intval($data['user_id']);
-                    echo "✅ Azonosított felhasználó: {$userId} (kapcsolat: {$from->resourceId})\n";
-
-                    $this->userMap[$from] = $userId; //az üzenet küldője a megfelelő felhasználó legyen
-
-                    // signed_in = 1-re állítjuk a felhasználót mert jelen van az üzenetéből adódóan
-                    $stmt = $this->db->prepare("UPDATE users SET signed_in = 1 WHERE id = ?");
-                    $stmt->bind_param("i", $userId);
-                    $stmt->execute();
-
-                    // Lekérjük az aktuális státuszt és last_seen értéket
-                    $stmt = $this->db->prepare("SELECT status, last_seen FROM users WHERE id = ?");
-                    $stmt->bind_param("i", $userId);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-                    $user = $result->fetch_assoc();
-
-                    $this->broadcastStatus($userId, $user['status'] === 'online' ? 'online' : 'offline', $user['last_seen']);
-                    return;
-                    break;
+                    $this->handleAuth($from, $data);
+                    return; // Az auth nem küld broadcast üzenetet
 
                 case 'ping':
-                    echo "📡 Ping érkezett a {$from->resourceId}-tól\n";
+                    echo "📡 Ping érkezett a $from->resourceId-tól\n";
                     return;
-                    break;
 
                 case 'text':
-                    // csak szöveges üzenet
-                    if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'])) return;
-                    $chatId = intval($data['chat_id']);
-                    $senderId = intval($data['sender_id']);
-                    $receiverId = intval($data['receiver_id']);
-                    $messageText = isset($data['message_text']) && trim($data['message_text']) !== '' ? trim($data['message_text']) : null;
-
-                    $stmt = $this->db->prepare("INSERT INTO messages (chat_id, sender_id, receiver_id, message_text) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("iiis", $chatId, $senderId, $receiverId, $messageText);
-
-                    if (!$stmt->execute()) {
-                        echo "❌ INSERT hiba: " . $stmt->error . "\n";
-                        return;
-                    }
-
-                    $messageId = $this->db->insert_id;
+                    $messageId = $this->handleText($data);
                     break;
 
                 case 'file':
-                    echo "➡️ FILE feldolgozás indul...\n";
-                    if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'], $data['files'])) {
-                        echo "❌ Hiányzó adat a file üzenethez!\n";
-                        return;
-                    }
-
-                    $chatId = intval($data['chat_id']);
-                    $senderId = intval($data['sender_id']);
-                    $receiverId = intval($data['receiver_id']);
-                    $messageText = isset($data['message_text']) && trim($data['message_text']) !== '' ? trim($data['message_text']) : null;
-
-                    $stmt = $this->db->prepare("INSERT INTO messages (chat_id, sender_id, receiver_id, message_text) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("iiis", $chatId, $senderId, $receiverId, $messageText);
-
-                    if (!$stmt->execute()) {
-                        echo "❌ INSERT hiba (file): " . $stmt->error . "\n";
-                        return;
-                    }
-
-                    $messageId = $this->db->insert_id;
-                    echo "✅ FILE messageId: $messageId\n";
-
-                    foreach ($data['files'] as $file) {
-                        $fileName = basename($file['file_name']);
-                        $fileContent = base64_decode($file['file_bytes']);
-
-                        if (strlen($fileContent) > 100 * 1024 * 1024) {
-                            echo "❌ $fileName túl nagy!\n";
-                            continue;
-                        }
-
-                        $path = __DIR__ . "/../uploads/files/$fileName";
-                        file_put_contents($path, $fileContent);
-
-                        $url = "http://10.0.2.2/ChatexProject/uploads/files/$fileName";
-
-                        $attStmt = $this->db->prepare("INSERT INTO message_attachments (message_id, file_type, file_name, download_url) VALUES (?, 'file', ?, ?)");
-                        $attStmt->bind_param("iss", $messageId, $fileName, $url);
-                        $attStmt->execute();
-                    }
-
+                    $messageId = $this->handleFile($data);
                     break;
-
 
                 case 'image':
-                    if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'], $data['images'])) {
-                        echo "❌ Hiányzó image adatok!\n";
-                        return;
-                    }
-
-                    $chatId = intval($data['chat_id']);
-                    $senderId = intval($data['sender_id']);
-                    $receiverId = intval($data['receiver_id']);
-                    $messageText = isset($data['message_text']) && trim($data['message_text']) !== ''
-                        ? trim($data['message_text'])
-                        : null;
-
-                    $stmt = $this->db->prepare("INSERT INTO messages (chat_id, sender_id, receiver_id, message_text) VALUES (?, ?, ?, ?)");
-                    $stmt->bind_param("iiis", $chatId, $senderId, $receiverId, $messageText);
-
-                    if (!$stmt->execute()) {
-                        echo "❌ INSERT hiba (image): " . $stmt->error . "\n";
-                        return;
-                    }
-
-                    $messageId = $this->db->insert_id;
-
-                    foreach ($data['images'] as $img) {
-                        $fileName = basename($img['file_name']);
-                        $imageData = base64_decode($img['image_data']);
-
-                        $uploadPath = __DIR__ . "/../uploads/media/$fileName";
-                        if (!file_exists(dirname($uploadPath))) {
-                            mkdir(dirname($uploadPath), 0777, true);
-                        }
-
-                        file_put_contents($uploadPath, $imageData);
-
-                        $downloadUrl = "http://10.0.2.2/ChatexProject/uploads/media/$fileName";
-
-                        $attStmt = $this->db->prepare("INSERT INTO message_attachments (message_id, file_type, file_name, download_url) VALUES (?, 'image', ?, ?)");
-                        $attStmt->bind_param("iss", $messageId, $fileName, $downloadUrl);
-                        $attStmt->execute();
-                    }
+                    $messageId = $this->handleImage($data);
                     break;
-
-
 
                 case 'read_status_update':
-                    if (!isset($data['chat_id'], $data['user_id'])) {
-                        echo "Hiányzó adatok a read_status_update-hez!\n";
-                        return;
-                    }
-
-                    $chatId = intval($data['chat_id']);
-                    $userId = intval($data['user_id']);
-
-                    foreach ($this->clients as $client) {
-                        if ($client !== $from && isset($this->userMap[$client]) && $this->userMap[$client] == $userId) {
-                            $stmt = $this->db->prepare("UPDATE messages SET is_read = 1 WHERE chat_id = ? AND receiver_id = ? AND is_read = 0");
-                            $stmt->bind_param("ii", $chatId, $userId);
-                            $stmt->execute();
-                            break;
-                        }
-                    }
-
-                    $stmt = $this->db->prepare("SELECT * FROM messages WHERE chat_id = ? AND receiver_id = ? AND is_read = 1");
-                    $stmt->bind_param("ii", $chatId, $userId);
-                    $stmt->execute();
-                    $result = $stmt->get_result();
-
-                    while ($row = $result->fetch_assoc()) {
-                        $payload = [
-                            'message_type' => 'message_read',
-                            'data' => $row
-                        ];
-                        foreach ($this->clients as $client) {
-                            $client->send(json_encode($payload));
-                        }
-                    }
-                    return;
-                    break;
+                    $this->handleReadStatus($data);
+                    return; // Saját broadcastot kezel
 
                 default:
                     echo "Ismeretlen message_type: $type\n";
                     return;
-                    break;
             }
 
-            if ($messageId) {
-                $query = $this->db->prepare("SELECT * FROM messages WHERE message_id = ?");
-                $query->bind_param("i", $messageId);
-                $query->execute();
-                $messageData = $query->get_result()->fetch_assoc();
-                $query->close();
-
-                $attStmt = $this->db->prepare("SELECT file_name, download_url FROM message_attachments WHERE message_id = ?");
-                $attStmt->bind_param("i", $messageId);
-                $attStmt->execute();
-                $attResult = $attStmt->get_result();
-
-                $attachments = [];
-                while ($row = $attResult->fetch_assoc()) {
-                    $attachments[] = $row;
-                }
-
-                $payload = [
-                    'message_type' => $type,
-                    'data' => array_merge($messageData, ['attachments' => $attachments])
-                ];
-
-                foreach ($this->clients as $client) {
-                    $client->send(json_encode($payload));
-                }
-
-                echo "Üzenet ($type) broadcastolva: " . json_encode($messageData) . "\n";
+            if (isset($messageId) && $messageId) {
+                $this->broadcastMessage($messageId, $type);
             }
         } catch (Throwable $e) {
             echo "Kivétel történt: " . $e->getMessage() . "\n";
         }
     }
 
-    //websocket kapcsolat bezárásakor mi történjen!
-    public function onClose(ConnectionInterface $conn)
+    // --- Privát kezelő metódusok a tisztább kódért ---
+
+    private function handleAuth(ConnectionInterface $from, array $data): void
     {
+        /** @var ConnectionInterface|stdClass $from */
+        if (!isset($data['user_id'])) {
+            echo "❌ Auth hiba: nincs user_id!\n";
+            return;
+        }
+
+        $userId = intval($data['user_id']);
+        echo "✅ Azonosított felhasználó: $userId (kapcsolat: $from->resourceId)\n";
+
+        $this->userMap[$from] = $userId;
+
+        $stmt = $this->db->prepare("UPDATE users SET signed_in = 1 WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+
+        $stmt = $this->db->prepare("SELECT status, last_seen FROM users WHERE id = ?");
+        $stmt->bind_param("i", $userId);
+        $stmt->execute();
+        $user = $stmt->get_result()->fetch_assoc();
+        
+        // Csak akkor küldünk státuszt, ha a felhasználó létezik az adatbázisban
+        if ($user) {
+            $this->broadcastStatus($userId, $user['status'] === 'online' ? 'online' : 'offline', $user['last_seen']);
+        }
+    }
+
+    private function handleText(array $data): ?int
+    {
+        if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'])) return null;
+
+        $chatId = intval($data['chat_id']);
+        $senderId = intval($data['sender_id']);
+        $receiverId = intval($data['receiver_id']);
+        $messageText = isset($data['message_text']) && trim($data['message_text']) !== '' ? trim($data['message_text']) : null;
+
+        $stmt = $this->db->prepare("INSERT INTO messages (chat_id, sender_id, receiver_id, message_text) VALUES (?, ?, ?, ?)");
+        $stmt->bind_param("iiis", $chatId, $senderId, $receiverId, $messageText);
+
+        if (!$stmt->execute()) {
+            echo "❌ INSERT hiba: " . $stmt->error . "\n";
+            return null;
+        }
+
+        return $this->db->insert_id;
+    }
+
+    private function handleFile(array $data): ?int
+    {
+        echo "➡️ FILE feldolgozás indul...\n";
+        if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'], $data['files'])) {
+            echo "❌ Hiányzó adat a file üzenethez!\n";
+            return null;
+        }
+
+        // Először létrehozzuk az üzenetet
+        $messageId = $this->handleText($data);
+        if (!$messageId) return null;
+
+        echo "✅ FILE messageId: $messageId\n";
+
+        foreach ($data['files'] as $file) {
+            $originalFileName = basename($file['file_name']);
+            $uniqueFileName = $this->generateUniqueFileName($originalFileName);
+            $fileContent = base64_decode($file['file_bytes']);
+
+            if (strlen($fileContent) > 100 * 1024 * 1024) {
+                echo "❌ $originalFileName túl nagy!\n";
+                continue;
+            }
+
+            $path = __DIR__ . "/../uploads/files/$uniqueFileName";
+            if (!file_exists(dirname($path))) {
+                // Biztonságosabb jogosultság használata
+                mkdir(dirname($path), 0755, true);
+            }
+            file_put_contents($path, $fileContent);
+
+            $url = "http://10.0.2.2/ChatexProject/uploads/files/$uniqueFileName";
+
+            $attStmt = $this->db->prepare("INSERT INTO message_attachments (message_id, file_type, file_name, download_url) VALUES (?, 'file', ?, ?)");
+            $attStmt->bind_param("iss", $messageId, $originalFileName, $url);
+            $attStmt->execute();
+        }
+
+        return $messageId;
+    }
+
+    private function handleImage(array $data): ?int
+    {
+        if (!isset($data['chat_id'], $data['sender_id'], $data['receiver_id'], $data['images'])) {
+            echo "❌ Hiányzó image adatok!\n";
+            return null;
+        }
+
+        // Először létrehozzuk az üzenetet
+        $messageId = $this->handleText($data);
+        if (!$messageId) return null;
+
+        foreach ($data['images'] as $img) {
+            $originalFileName = basename($img['file_name']);
+            $uniqueFileName = $this->generateUniqueFileName($originalFileName);
+            $imageData = base64_decode($img['image_data']);
+
+            $uploadPath = __DIR__ . "/../uploads/media/$uniqueFileName";
+            if (!file_exists(dirname($uploadPath))) {
+                // Biztonságosabb jogosultság használata
+                mkdir(dirname($uploadPath), 0755, true);
+            }
+
+            file_put_contents($uploadPath, $imageData);
+
+            $downloadUrl = "http://10.0.2.2/ChatexProject/uploads/media/$uniqueFileName";
+
+            $attStmt = $this->db->prepare("INSERT INTO message_attachments (message_id, file_type, file_name, download_url) VALUES (?, 'image', ?, ?)");
+            $attStmt->bind_param("iss", $messageId, $originalFileName, $downloadUrl);
+            $attStmt->execute();
+        }
+
+        return $messageId;
+    }
+
+    private function handleReadStatus(array $data): void
+    {
+        if (!isset($data['chat_id'], $data['user_id'])) {
+            echo "Hiányzó adatok a read_status_update-hez!\n";
+            return;
+        }
+
+        $chatId = intval($data['chat_id']);
+        $userId = intval($data['user_id']);
+
+        // Frissítjük az adatbázist
+        $stmt = $this->db->prepare("UPDATE messages SET is_read = 1 WHERE chat_id = ? AND receiver_id = ? AND is_read = 0");
+        $stmt->bind_param("ii", $chatId, $userId);
+        $stmt->execute();
+
+        // Lekérjük a frissített üzeneteket és értesítjük a klienseket
+        $stmt = $this->db->prepare("SELECT * FROM messages WHERE chat_id = ? AND receiver_id = ? AND is_read = 1");
+        $stmt->bind_param("ii", $chatId, $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        while ($row = $result->fetch_assoc()) {
+            $payload = [
+                'message_type' => 'message_read',
+                'data' => $row
+            ];
+            foreach ($this->clients as $client) {
+                $client->send(json_encode($payload));
+            }
+        }
+    }
+
+    private function broadcastMessage(int $messageId, string $type): void
+    {
+        $query = $this->db->prepare("SELECT * FROM messages WHERE message_id = ?");
+        $query->bind_param("i", $messageId);
+        $query->execute();
+        $messageData = $query->get_result()->fetch_assoc();
+        $query->close();
+
+        $attStmt = $this->db->prepare("SELECT file_name, download_url FROM message_attachments WHERE message_id = ?");
+        $attStmt->bind_param("i", $messageId);
+        $attStmt->execute();
+        $attResult = $attStmt->get_result();
+
+        $attachments = [];
+        while ($row = $attResult->fetch_assoc()) {
+            $attachments[] = $row;
+        }
+
+        $payload = [
+            'message_type' => $type,
+            'data' => array_merge($messageData ?? [], ['attachments' => $attachments])
+        ];
+
+        $jsonPayload = json_encode($payload);
+        foreach ($this->clients as $client) {
+            $client->send($jsonPayload);
+        }
+
+        echo "Üzenet ($type) broadcastolva: " . json_encode($messageData) . "\n";
+    }
+
+    private function generateUniqueFileName(string $originalName): string
+    {
+        $extension = pathinfo($originalName, PATHINFO_EXTENSION);
+        // Generál egy egyedi azonosítót és hozzáfűzi a kiterjesztést
+        return uniqid('file_', true) . '.' . $extension;
+    }
+
+    //websocket kapcsolat bezárásakor mi történjen!
+    public function onClose(ConnectionInterface $conn): void
+    {
+        /** @var ConnectionInterface|stdClass $conn */
         $this->clients->detach($conn);
 
         if (isset($this->userMap[$conn])) {
@@ -318,19 +334,17 @@ class ChatServer implements MessageComponentInterface
             $stmt->bind_param("i", $userId);
             $stmt->execute();
 
-            $stmt = $this->db->prepare("SELECT status FROM users WHERE id = ?");
-            $stmt->bind_param("i", $userId);
-            $stmt->execute();
-            $result = $stmt->get_result()->fetch_assoc();
-
+            // Értesítjük a többi klienst, hogy a felhasználó offline lett
             $this->broadcastStatus($userId, 'offline', date("Y-m-d H:i:s"));
+
+            unset($this->userMap[$conn]);
         }
 
-        echo "Kapcsolat lezárva: {$conn->resourceId}\n";
+        echo "Kapcsolat lezárva: $conn->resourceId\n";
     }
 
     //hiba esetén mi történjen
-    public function onError(ConnectionInterface $conn, \Exception $e)
+    public function onError(ConnectionInterface $conn, Exception $e): void
     {
         echo "Hiba: {$e->getMessage()}\n";
         $conn->close();

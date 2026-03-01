@@ -7,15 +7,17 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-if (!isset($data["user_id"], $data["friend_id"])) {
+if (!isset($userData["user_id"], $userData["friend_id"])) {
     echo json_encode(["success" => false, "message" => "Hiányzó adatok!"]);
     exit;
 }
 
-$user_id = $data["user_id"];
-$friend_id = $data["friend_id"];
+$user_id = $userData["user_id"];
+$friend_id = $userData["friend_id"];
 
 //a bekért id-kból mind a két írányban töröljük a barátságot (itt sincs még visszajelzés a felhasználók felé...)
 $query = "DELETE FROM friends 

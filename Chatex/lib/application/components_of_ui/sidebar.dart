@@ -256,51 +256,46 @@ class _ChatSidebarState extends State<ChatSidebar> {
     );
   }
 
-  Widget _buildProfileImage() {
+  Widget _getProfileImage() {
     final String? image = Preferences.getProfilePicture();
 
     if (image == null || image.isEmpty) {
       return _defaultAvatar();
     }
 
-    Widget imageWidget;
-    if (image.startsWith("data:image/svg+xml;base64,")) {
-      final svgString = utf8.decode(base64Decode(image.split(",")[1]));
-      imageWidget = SvgPicture.string(
-        svgString,
-        width: 120,
-        height: 120,
-        fit: BoxFit.fill,
-      );
-    } else if (image.startsWith("data:image/")) {
-      final imageBytes = base64Decode(image.split(",")[1]);
-      imageWidget = Image.memory(
-        imageBytes,
-        width: 120, //(width, height)*2 = radius
-        height: 120,
-        fit: BoxFit.fill,
-      );
-    } else {
-      //errort kapunk ha túl gyorsan töltjük be a sidebar-t ezért kell a postFrameCallback
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ToastMessages.showToastMessages(
-          Preferences.isHungarian
-              ? "Ismeretlen MIME-típus a profilképnél!"
-              : "An unknown MIME type has been detected!",
-          0.2,
-          Colors.redAccent,
-          Icons.error,
-          Colors.black,
-          const Duration(seconds: 2),
-          context,
-          center: true,
-          rightPercentage: 0,
-          leftPercentage: 0,
-        );
-      });
-      imageWidget = _defaultAvatar();
+    // URL kezelése: ha nem http-vel kezdődik, akkor feltételezzük, hogy csak fájlnév
+    // és a szerver uploads/media mappájából töltjük be.
+    String imageUrl = image;
+    if (!image.startsWith('http')) {
+      // TODO: A base URL-t (http://10.0.2.2/...) érdemes lenne globális konstansba szervezni
+      imageUrl = "http://10.0.2.2/ChatexProject/uploads/media/$image";
     }
 
+    // Kiterjesztés vizsgálata (SVG vagy raszteres kép)
+    if (imageUrl.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.network(
+        imageUrl,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        placeholderBuilder: (context) => _defaultAvatar(),
+      );
+    } else {
+      return Image.network(
+        imageUrl,
+        width: 120,
+        height: 120,
+        fit: BoxFit.cover,
+        loadingBuilder: (context, child, loadingProgress) {
+          if (loadingProgress == null) return child;
+          return _defaultAvatar();
+        },
+        errorBuilder: (context, error, stackTrace) => _defaultAvatar(),
+      );
+    }
+  }
+
+  Widget _buildProfileImage() {
     //a profilképhez hozzáadjuk a státusz karikát:
     return SizedBox(
       //a profilkép méretével megegyező SizedBox-ot felveszünk ez engedi majd a Stack widgetet
@@ -318,7 +313,11 @@ class _ChatSidebarState extends State<ChatSidebar> {
               radius: 60,
               backgroundColor: Colors.grey[800],
               child: ClipOval(
-                child: imageWidget,
+                child: SizedBox(
+                  width: 120,
+                  height: 120,
+                  child: _getProfileImage(),
+                ),
               ),
             ),
           ),

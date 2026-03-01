@@ -250,6 +250,7 @@ class _FriendRequestsState extends State<FriendRequests> {
     }
 
     try {
+      //TODO: base64
       if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
         final svgString = base64Decode(profilePicture.split(",")[1]);
         return ClipOval(

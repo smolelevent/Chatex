@@ -7,10 +7,12 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . "/../../db.php"; //kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-$user_id = intval($data["user_id"]);
-$friend_id = intval($data["friend_id"]);
+$user_id = intval($userData["user_id"]);
+$friend_id = intval($userData["friend_id"]);
 
 //ez a lekérdezés megnézi hogy a kettő felhasználó (mind a két írányban) barátok e vagy sem
 $query = "SELECT * FROM friends WHERE (user_id = ? AND friend_id = ?) OR (user_id = ? AND friend_id = ?)";

@@ -7,10 +7,12 @@ header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers
 
 require_once __DIR__ . '/../../db.php'; //adatbázis kapcsolat
 
-$data = json_decode(file_get_contents("php://input"), true);
+$conn = getDbConnection();
+$input = file_get_contents("php://input");
+$userData = json_decode($input, true);
 
-$chatId = intval($data['chat_id']);
-$userId = intval($data['user_id']);
+$chatId = intval($userData['chat_id']);
+$userId = intval($userData['user_id']);
 
 //megszámoljuk az összes olyan chatet amihez a felhasználónak köze van!
 $stmt = $conn->prepare("SELECT COUNT(*) as cnt FROM chat_members WHERE chat_id = ? AND user_id = ?");
