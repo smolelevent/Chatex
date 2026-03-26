@@ -4,6 +4,7 @@ import 'package:chatex/application/components_of_chat/build_ui.dart';
 import 'package:chatex/main.dart';
 import 'package:chatex/logic/toast_message.dart';
 import 'package:chatex/logic/preferences.dart';
+import 'package:chatex/constants/api_constants.dart';
 import 'dart:developer';
 import 'dart:convert';
 
@@ -23,8 +24,7 @@ class AuthService {
     try {
       //eltároljuk a regisztrációkor megszerzett adatokat és továbbítjuk az adatbázisnak
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2/ChatexProject/chatex_phps/auth/register.php'),
+        Uri.parse(registerUrl),
         body: jsonEncode(<String, String>{
           'username': username.text.trim(),
           'email': email.text.trim(),
@@ -115,7 +115,7 @@ class AuthService {
     try {
       //a kiválasztott nyelvet, email-t, és jelszót is elmentjük és frissítjük az adatbázisban, illetve...
       final response = await http.post(
-        Uri.parse('http://10.0.2.2/ChatexProject/chatex_phps/auth/login.php'),
+        Uri.parse(loginUrl),
         body: jsonEncode(<String, String>{
           'email': email.text.trim(),
           'password': password.text.trim(),
@@ -213,7 +213,7 @@ class AuthService {
 
     try {
       final response = await http.post(
-        Uri.parse('http://10.0.2.2/ChatexProject/chatex_phps/auth/logout.php'),
+        Uri.parse(logoutUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"user_id": userId}),
       );
@@ -258,8 +258,7 @@ class AuthService {
       //mivel a főképernyőről megyünk a helyreállító oldalra ezért bekérjük a nyelvet (megfelelő válasz)
       //és az emailt amihez küldeni fogjuk a helyreállító emailt!
       final response = await http.post(
-        Uri.parse(
-            'http://10.0.2.2/ChatexProject/chatex_phps/reset_password/reset_password.php'),
+        Uri.parse(resetPasswordUrl),
         body: jsonEncode(<String, String>{
           'email': email.text.trim(),
         }),

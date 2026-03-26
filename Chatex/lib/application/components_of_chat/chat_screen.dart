@@ -11,6 +11,8 @@ import 'package:chatex/application/components_of_chat/components_of_chat_screen/
 import 'package:chatex/application/components_of_chat/components_of_chat_screen/chat_information.dart';
 import 'package:chatex/logic/toast_message.dart';
 import 'package:chatex/logic/preferences.dart';
+import 'package:chatex/constants/api_constants.dart';
+import 'package:chatex/constants/chat_constants.dart';
 import 'dart:typed_data';
 import 'dart:developer';
 import 'dart:convert';
@@ -56,7 +58,6 @@ class _ChatScreenState extends State<ChatScreen> {
       FocusNode(); //szövegmező fokuszálásának a meghatározásához
   bool _isInputFocused = false; //amit itt mentünk el
 
-  static const int _maxMessageLength = 5000;
   bool get _showSendIcon {
     //küldés ikon ha nem üres a szövegmező vagy nem üres a csatolmány lista
     return _messageController.text.trim().isNotEmpty || _attachments.isNotEmpty;
@@ -153,8 +154,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _connectToWebSocket() {
     _channel = WebSocketChannel.connect(
-      Uri.parse(
-          "ws://10.0.2.2:8080"), //csatlakozunk a websocket szerverhez hogy valós időben frissüljenek az adatok
+      Uri.parse(webSocketUrl), //csatlakozunk a websocket szerverhez hogy valós időben frissüljenek az adatok
     );
 
     //Auth típusú üzenet frissíti a is_online és a last_seen mezőt ezért az Appbar-ban lévő adatok frissülnek
@@ -291,8 +291,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _loadMessages() async {
     try {
       final response = await http.post(
-        Uri.parse(
-            "http://10.0.2.2/ChatexProject/chatex_phps/chat/get/get_messages.php"),
+        Uri.parse(getMessagesUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({"chat_id": widget.chatId}),
       );
@@ -394,7 +393,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final validFiles = <PlatformFile>[];
 
     for (final file in picked.files) {
-      if (file.size > 100 * 1024 * 1024) {
+      if (file.size > maxFileAttachmentSize) {
         //maximum 100MB a fájlok együttes mérete
         oversizedFiles.add(file);
       } else {
@@ -455,7 +454,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (picked == null) return;
 
     final bytes = await picked.readAsBytes();
-    if (bytes.length > 50 * 1024 * 1024) {
+    if (bytes.length > maxImageAttachmentSize) {
       //maximum 50MB a kép küldés limitje
       _showContentDialog(
         "A képek mérete túl nagy!",
@@ -501,7 +500,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     for (final img in picked) {
       final length = await img.length();
-      if (length > 50 * 1024 * 1024) {
+      if (length > maxImageAttachmentSize) {
         //maximum 50MB a képek együttes mérete
         oversized.add(img);
       } else {
@@ -605,8 +604,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _markMessagesAsRead() async {
     try {
       final response = await http.post(
-        Uri.parse(
-            "http://10.0.2.2/ChatexProject/chatex_phps/chat/set/mark_as_read.php"),
+        Uri.parse(markAsReadUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "chat_id": widget.chatId,
@@ -645,8 +643,7 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<void> _deleteMessage(int messageId) async {
     try {
       final response = await http.post(
-        Uri.parse(
-            "http://10.0.2.2/ChatexProject/chatex_phps/chat/set/delete_message.php"),
+        Uri.parse(deleteMessageUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "message_id":
@@ -837,13 +834,13 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _checkMessageLength() {
-    if (_messageController.text.length > _maxMessageLength) {
+    if (_messageController.text.length > maxMessageLength) {
       //jelenleg 5000-re van rakva mind itt Dart-on és mind az adatbázisba!
       _showContentDialog(
         "Túl hosszú üzenet!",
         "Message too long!",
-        "Legfeljebb $_maxMessageLength karakter hosszú üzenetet lehet küldeni!",
-        "You can send a message up to $_maxMessageLength characters!",
+        "Legfeljebb $maxMessageLength karakter hosszú üzenetet lehet küldeni!",
+        "You can send a message up to $maxMessageLength characters!",
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -1365,11 +1362,11 @@ class _ChatScreenState extends State<ChatScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 8),
                         child: Text(
-                          "${_messageController.text.length}/$_maxMessageLength", //karakter számláló
+                          "${_messageController.text.length}/$maxMessageLength", //karakter számláló
                           style: TextStyle(
                             fontSize: 12,
                             color: _messageController.text.length >
-                                    _maxMessageLength
+                                    maxMessageLength
                                 ? Colors.redAccent
                                 : Colors.grey[400],
                           ),

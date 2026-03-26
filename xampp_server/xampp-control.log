@@ -2850,3 +2850,114 @@
 0:21:37  [main] 	Deinitializing Modules
 0:21:37  [main] 	Deinitializing Control Panel
 
+23:56:49  [main] 	Initializing Control Panel
+23:56:49  [main] 	Windows Version:  Home  64-bit
+23:56:49  [main] 	XAMPP Version: 8.2.12
+23:56:49  [main] 	Control Panel Version: 3.3.0  [ Compiled: Apr 6th 2021 ]
+23:56:49  [main] 	You are not running with administrator rights! This will work for
+23:56:49  [main] 	most application stuff but whenever you do something with services
+23:56:49  [main] 	there will be a security dialogue or things will break! So think 
+23:56:49  [main] 	about running this application with administrator rights!
+23:56:49  [main] 	XAMPP Installation Directory: "c:\users\l\desktop\programming\chatex\xampp_server\"
+23:56:49  [main] 	Checking for prerequisites
+23:56:50  [main] 	All prerequisites found
+23:56:50  [main] 	Initializing Modules
+23:56:50  [Apache] 	Apache Service detected with wrong path
+23:56:50  [Apache] 	Change XAMPP Apache and Control Panel settings or
+23:56:50  [Apache] 	Uninstall/disable the other service manually first
+23:56:50  [Apache] 	Found Path: "C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\apache\bin\httpd.exe" -k runservice
+23:56:50  [Apache] 	Expected Path: "c:\users\l\desktop\programming\chatex\xampp_server\apache\bin\httpd.exe" -k runservice
+23:56:50  [mysql] 	MySQL Service detected with wrong path
+23:56:50  [mysql] 	Change XAMPP MySQL and Control Panel settings or
+23:56:50  [mysql] 	Uninstall/disable the other service manually first
+23:56:50  [mysql] 	Found Path: C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\my.ini mysql
+23:56:50  [mysql] 	Expected Path: c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\my.ini mysql
+23:56:50  [main] 	The Mercury module is disabled
+23:56:50  [main] 	The Tomcat module is disabled
+23:56:50  [main] 	Starting Check-Timer
+23:56:50  [main] 	Control Panel Ready
+23:57:18  [filezilla] 	Status change detected: running
+23:57:22  [filezilla] 	Status change detected: stopped
+23:57:22  [filezilla] 	Error: FileZilla shutdown unexpectedly.
+23:57:22  [filezilla] 	This may be due to a blocked port, missing dependencies, 
+23:57:22  [filezilla] 	improper privileges, a crash, or a shutdown by another method.
+23:57:22  [filezilla] 	Press the Logs button to view error logs and check
+23:57:22  [filezilla] 	the Windows Event Viewer for more clues
+23:57:22  [filezilla] 	If you need more help, copy and post this
+23:57:22  [filezilla] 	entire log window on the forums
+1:49:26  [main] 	Deinitializing Modules
+1:49:26  [main] 	Deinitializing Control Panel
+
+23:30:58  [main] 	Initializing Control Panel
+23:30:58  [main] 	Windows Version:  Home  64-bit
+23:30:58  [main] 	XAMPP Version: 8.2.12
+23:30:58  [main] 	Control Panel Version: 3.3.0  [ Compiled: Apr 6th 2021 ]
+23:30:58  [main] 	You are not running with administrator rights! This will work for
+23:30:58  [main] 	most application stuff but whenever you do something with services
+23:30:58  [main] 	there will be a security dialogue or things will break! So think 
+23:30:58  [main] 	about running this application with administrator rights!
+23:30:58  [main] 	XAMPP Installation Directory: "c:\users\l\desktop\programming\chatex\xampp_server\"
+23:30:58  [main] 	Checking for prerequisites
+23:30:59  [main] 	All prerequisites found
+23:30:59  [main] 	Initializing Modules
+23:30:59  [Apache] 	Problem detected: Apache Not Found!
+23:30:59  [Apache] 	Disabling Apache buttons
+23:30:59  [Apache] 	Run this program from your XAMPP root directory!
+23:30:59  [Apache] 	Apache Service detected with wrong path
+23:30:59  [Apache] 	Change XAMPP Apache and Control Panel settings or
+23:30:59  [Apache] 	Uninstall/disable the other service manually first
+23:30:59  [Apache] 	Found Path: "C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\apache\bin\httpd.exe" -k runservice
+23:30:59  [Apache] 	Expected Path: "c:\users\l\desktop\programming\chatex\xampp_server\apache\bin\httpd.exe" -k runservice
+23:30:59  [mysql] 	Problem detected: MySQL Not Found!
+23:30:59  [mysql] 	Disabling MySQL buttons
+23:30:59  [mysql] 	Run this program from your XAMPP root directory!
+23:30:59  [mysql] 	MySQL Service detected with wrong path
+23:30:59  [mysql] 	Change XAMPP MySQL and Control Panel settings or
+23:30:59  [mysql] 	Uninstall/disable the other service manually first
+23:30:59  [mysql] 	Found Path: C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\my.ini mysql
+23:30:59  [mysql] 	Expected Path: c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\my.ini mysql
+23:30:59  [main] 	The FileZilla module is disabled
+23:30:59  [main] 	The Mercury module is disabled
+23:30:59  [main] 	The Tomcat module is disabled
+23:30:59  [main] 	Starting Check-Timer
+23:30:59  [main] 	Control Panel Ready
+1:49:28  [main] 	Deinitializing Modules
+1:49:28  [main] 	Deinitializing Control Panel
+
+23:28:39  [main] 	Initializing Control Panel
+23:28:39  [main] 	Windows Version:  Home  64-bit
+23:28:39  [main] 	XAMPP Version: 8.2.12
+23:28:39  [main] 	Control Panel Version: 3.3.0  [ Compiled: Apr 6th 2021 ]
+23:28:39  [main] 	You are not running with administrator rights! This will work for
+23:28:39  [main] 	most application stuff but whenever you do something with services
+23:28:39  [main] 	there will be a security dialogue or things will break! So think 
+23:28:39  [main] 	about running this application with administrator rights!
+23:28:39  [main] 	XAMPP Installation Directory: "c:\users\l\desktop\programming\chatex\xampp_server\"
+23:28:39  [main] 	Checking for prerequisites
+23:28:43  [main] 	All prerequisites found
+23:28:43  [main] 	Initializing Modules
+23:28:43  [Apache] 	Problem detected: Apache Not Found!
+23:28:43  [Apache] 	Disabling Apache buttons
+23:28:43  [Apache] 	Run this program from your XAMPP root directory!
+23:28:43  [Apache] 	Apache Service detected with wrong path
+23:28:43  [Apache] 	Change XAMPP Apache and Control Panel settings or
+23:28:43  [Apache] 	Uninstall/disable the other service manually first
+23:28:43  [Apache] 	Found Path: "C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\apache\bin\httpd.exe" -k runservice
+23:28:43  [Apache] 	Expected Path: "c:\users\l\desktop\programming\chatex\xampp_server\apache\bin\httpd.exe" -k runservice
+23:28:43  [mysql] 	Problem detected: MySQL Not Found!
+23:28:43  [mysql] 	Disabling MySQL buttons
+23:28:43  [mysql] 	Run this program from your XAMPP root directory!
+23:28:43  [mysql] 	MySQL Service detected with wrong path
+23:28:43  [mysql] 	Change XAMPP MySQL and Control Panel settings or
+23:28:43  [mysql] 	Uninstall/disable the other service manually first
+23:28:43  [mysql] 	Found Path: C:\Users\L\Desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\messengeres-vizsgaremek\xampp_server\mysql\bin\my.ini mysql
+23:28:43  [mysql] 	Expected Path: c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\mysqld.exe --defaults-file=c:\users\l\desktop\programming\chatex\xampp_server\mysql\bin\my.ini mysql
+23:28:43  [main] 	The FileZilla module is disabled
+23:28:43  [main] 	The Mercury module is disabled
+23:28:43  [main] 	The Tomcat module is disabled
+23:28:43  [main] 	Starting Check-Timer
+23:28:43  [main] 	Control Panel Ready
+23:30:49  [main] 	Executing "c:\users\l\desktop\programming\chatex\xampp_server\"
+1:49:29  [main] 	Deinitializing Modules
+1:49:29  [main] 	Deinitializing Control Panel
+

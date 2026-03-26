@@ -1,0 +1,4 @@
+#App Resource Bundle
+arb-dir: lib/l10n
+template-arb-file: app_en.arb #english template
+output-localization-file: app_localizations.dart #ide generálja

@@ -182,7 +182,7 @@ class _ChatInfoScreenState extends State<ChatInfoScreen> {
     );
   }
 
-  void _confirmDelete(context) {
+  void _confirmDelete(BuildContext context) {
     showDialog(
       context: context,
       builder: (dialogContext) {

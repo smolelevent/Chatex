@@ -7,7 +7,7 @@ class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  static Future<void> initialize() async {
+  static Future<void> init() async {
     //ez a metódus a main.dart betöltésekor inicializálja az értesítések beállításait (értesítése ikon)
     const AndroidInitializationSettings androidSettings =
         AndroidInitializationSettings('@drawable/ic_notification');
@@ -16,7 +16,7 @@ class NotificationService {
       android: androidSettings,
     );
 
-    await _notificationsPlugin.initialize(settings);
+    await _notificationsPlugin.initialize(settings: settings);
   }
 
   static Future<void> showNotification({
@@ -40,13 +40,14 @@ class NotificationService {
     );
 
     await _notificationsPlugin.show(
+      id: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       //egyedi azonosítót kap ami a "Unix epoch" óta eltelt idő osztva 1000-el,
       //majd kerekítve a 0-hoz közel (debugnál hasznos)
-      DateTime.now().millisecondsSinceEpoch ~/ 1000,
       //megjelenítjük a megadott title-t és body-t (ami tetszőleges lehet!)
-      title,
-      body,
-      platformDetails, //androidra szánt beállítások-al jelenítse meg
+      title: title,
+      body: body,
+      notificationDetails:
+          platformDetails, //androidra szánt beállítások-al jelenítse meg
     );
   }
 //HÁTTÉR FOLYAMATOK VÉGE --------------------------------------------------------------------------

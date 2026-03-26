@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'l10n/app_localizations.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:provider/provider.dart';
+import 'package:chatex/logic/locale_provider.dart';
 import 'package:chatex/main/sign_up.dart';
 import 'package:chatex/main/reset_password.dart';
 import 'package:chatex/application/components_of_chat/build_ui.dart';
@@ -10,6 +14,9 @@ import 'package:chatex/logic/notifications.dart';
 import 'package:chatex/logic/toast_message.dart';
 import 'package:chatex/logic/preferences.dart';
 import 'package:chatex/logic/auth.dart';
+import 'package:chatex/constants/api_constants.dart';
+import 'package:chatex/constants/language_constants.dart';
+import 'package:chatex/constants/validation_constants.dart';
 import 'dart:developer';
 import 'dart:convert';
 
@@ -19,45 +26,97 @@ import 'dart:convert';
 
 //GLOBÁLIS METÓDUSOK ELEJE ------------------------------------------------------------------------
 Future<void> main() async {
-  //ez a metódus az alap metódus, ez indítja el a Chatex alkalmazást,
-  //de nem csak elindítja hanem mást is csinál:
+  final WidgetsBinding widgetFrameworkFlutterEngineConnection = WidgetsFlutterBinding.ensureInitialized();
+  //ahhoz hogy megfelelő időben, jelenjen meg a splash screen (az alkalmazás indításakor),
+  FlutterNativeSplash.preserve(widgetsBinding: widgetFrameworkFlutterEngineConnection);
 
-  //ez a változó eltárolja azt hogy a Widgets framework és a Flutter engine között lévő kapcsolat
-  //biztosan hogy létre legyen hozva!
-  final WidgetsBinding widgetsBinding =
-      WidgetsFlutterBinding.ensureInitialized();
-  //ahoz hogy megfelelő időben, jelenjen meg a splash screen (az alkalmazás indításakor),
-  //ahoz a widgetsBinding-ot biztosítani kell hogy inicializált legyen!!
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
-  //inicializáljuk közben a kettő osztályunkat: a Preferences-t (lokális tárolás)
-  //és a NotificationService-t (értesítések)
   await Preferences.init();
-  await NotificationService.initialize();
+  await NotificationService.init();
 
-  //amikor már betöltött az alkalmazás tűntesse el a splash screen-t
-  FlutterNativeSplash.remove();
+  final String savedLanguageName = Preferences.getPreferredLanguage();
+  final String localeCode = languageToLocale[savedLanguageName] ?? 'hu';
 
-  //megnézi, majd eltároljuk a tryAutoLogin metódus eredményét,
-  //ami a token alapú (preferences osztály) bejelentkezve maradáshoz szükséges!
-  final isLoggedIn = await tryAutoLogin();
-
-  //végül elindítja az alkalmazást,
-  //ami a isLoggedIn változó alapján vagy a build_ui.dart-ra visz, vagy a main.dart-on hagy!
-  runApp(MaterialApp(
-    home: isLoggedIn ? const ChatUI() : const LoginUI(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => LocaleProvider(Locale(localeCode)),
+      child: const MyApp(),
+    ),
+  );
 }
 
-Future<bool> tryAutoLogin() async {
-  //ez a metódus nézi meg hogy érvényes e még a felhasználó token-je
-  //és az alapján dönti el hogy melyik képernyő legyen betöltve
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // Figyeljük a LocaleProvider változásait, hogy a MaterialApp újraépüljön nyelvváltáskor.
+    final localeProvider = Provider.of<LocaleProvider>(context);
+
+    return MaterialApp(
+      // Itt adjuk át a MaterialApp-nak a Provider-ből érkező,
+      // dinamikusan változó nyelvi beállítást!
+      locale: localeProvider.locale,
+      localizationsDelegates: const [
+        // Ez a legfontosabb: ez köti össze az .arb fájlokat a kóddal.
+        AppLocalizations.delegate,
+        // A többi a Flutter beépített widgetjeinek fordításáért felel.
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      // Ez a lista is automatikusan generálódik az .arb fájlokból.
+      supportedLocales: AppLocalizations.supportedLocales,
+      home: const AuthWrapper(),
+    );
+  }
+}
+
+///Ez a widget dönti el, hogy a ChatUI-t vagy a LoginUI-t mutassa-e.
+class AuthWrapper extends StatefulWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  State<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends State<AuthWrapper> {
+  late Future<bool> _isLoggedInFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    // A bejelentkezési logikát itt indítjuk, a UI felépítése után.
+    _isLoggedInFuture = tryAutoLoginByToken();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<bool>(
+      future: _isLoggedInFuture,
+      builder: (context, snapshot) {
+        // Amíg a hálózati kérés fut, a Splash Screen látszik.
+        if (snapshot.connectionState == ConnectionState.done) {
+          FlutterNativeSplash.remove();
+          if (snapshot.hasData && snapshot.data == true) {
+            return const ChatUI();
+          }
+
+          return const LoginUI();
+        }
+
+        // Amíg a future fut, egy üres konténert mutatunk, a splash screen takarja.
+        return const SizedBox.shrink();
+      },
+    );
+  }
+}
+
+Future<bool> tryAutoLoginByToken() async {
   final token = Preferences.getToken();
 
   try {
     final response = await http.post(
-      Uri.parse(
-          "http://10.0.2.2/ChatexProject/chatex_phps/auth/validate_token.php"),
+      Uri.parse(validateTokenUrl),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({"token": token}),
     );
@@ -74,7 +133,7 @@ Future<bool> tryAutoLogin() async {
       return true;
     }
   } catch (e) {
-    log("Hiba a token validálásakor: ${e.toString()}");
+    log("Error during token validation: ${e.toString()}");
   }
 
   return false;
@@ -95,30 +154,20 @@ class LoginUI extends StatefulWidget {
 
 class _LoginUIState extends State<LoginUI> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
-
-  //TextEditingController típusú változókba tároljuk el az input mezők tartalmát
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  //FocusNode-okkal vizsgáljuk ha az input mezőkön van fókusz vagy nincs,
   final FocusNode _emailFocusNode = FocusNode();
   final FocusNode _passwordFocusNode = FocusNode();
 
-  //amiket bool változókba tároljuk el, hogy később dizájn változtatást tudjunk előidézni
   bool _isEmailFocused = false;
   bool _isPasswordFocused = false;
 
-  //ez a változó pedig azért felel hogy váltakozni tudjon a szem ikon megnyomására a jelszó,
-  //rendes és pontozott tartalom között!
   bool _isPasswordNotVisible = true;
 
-  //a mezők validálását tudjuk vizsgálni a _formKey segítségével
   final _formKey = GlobalKey<FormBuilderState>();
-  //alapértelmezetten NINCS engedélyezve a Bejelentkezés gomb, mivel vagy nincsenek vagy hibásak az adatok!
-  bool _isLogInDisabled = true;
 
-  //ha már volt bejelentkezve/regisztrálva/tokenből kinyerve a preferált nyelv akkor aszerint mutatjuk a szövegeket!
-  String _selectedLanguage = Preferences.getPreferredLanguage();
+  bool _isLogInDisabled = true;
 
 //OSZTÁLYON BELÜLI VÁLTOZÓK VÉGE ------------------------------------------------------------------
 
@@ -126,10 +175,9 @@ class _LoginUIState extends State<LoginUI> {
 
   @override
   void initState() {
-    //inicializáljuk a Flutter engine alapértelmezett dolgait, majd
+    //inicializáljuk a Flutter engine alapértelmezett dolgait
     super.initState();
 
-    //a FocusNodeok-hoz hozzácsatoljuk a bool változóinkat, ha azok a mezők fókuszt kapnak!
     _emailFocusNode.addListener(() {
       setState(() {
         _isEmailFocused = _emailFocusNode.hasFocus;
@@ -164,22 +212,14 @@ class _LoginUIState extends State<LoginUI> {
   }
 
   void _checkLoginFieldsValidation() {
-    //ez a metódus felel azért hogy a FormBuilder által létrehozott FormBuilderTextField-ek
-    //megfelelően legyenek validálva és megfelelően legyen kezelve a bejelentkezés gomb!
-
-    //a _formKey-en keresztűl vehetjük ki a email és a jelszó mező tulajdonságait
     final currentState = _formKey.currentState;
-    //ha ez üres akkor térjen is vissza!
     if (currentState == null) return;
 
-    //explicit validálás (ez frissíti is a mezőket vizuálisan! Illetve ha van rossz érték akkor ne ugorjon egyből oda)
     final isValid = currentState.validate(focusOnInvalid: false);
 
-    //lekérjük a mezők értékeit név alapján
     final emailValue = currentState.fields['email']?.value?.trim() ?? '';
     final passwordValue = currentState.fields['password']?.value?.trim() ?? '';
 
-    //és ha egyik érték sem üres akkor...
     final allFilled = emailValue.isNotEmpty && passwordValue.isNotEmpty;
 
     setState(() {
@@ -206,23 +246,30 @@ class _LoginUIState extends State<LoginUI> {
 //DIZÁJN ELEMEK ELEJE -----------------------------------------------------------------------------
 
   Widget _buildDropdownMenu() {
-    //ez a metódus felépíti a nyelvválasztó menüt ami jelenleg magyart és angolt tartalmaz
+    final localeProvider = Provider.of<LocaleProvider>(context);
+    final currentLanguageName = localeToLanguage[localeProvider.locale?.languageCode] ?? 'Magyar';
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 15, top: 20),
       child: DropdownMenu<String>(
         //nem kaphat fókuszt, mert akkor keresni lehetne a tartalma között (2 értéknél felesleges)
         requestFocusOnTap: false,
         label: Text(
-          _selectedLanguage == "Magyar" ? "Nyelvek" : "Languages",
+          AppLocalizations.of(context)!.languages,
         ),
-        //az alapértelmezett érték a preferált nyelv legyen (Magyar/English),
-        //ami megegyezik az entry-k value property-ével
-        initialSelection: _selectedLanguage,
-        onSelected: (newValue) {
-          //newValue egy lokális változó amit a DropdownMenu kezel és az entry-k value-it tartalmazza!
-          setState(() {
-            _selectedLanguage = newValue!;
-          });
+        initialSelection: currentLanguageName,
+        onSelected: (newLanguageName) {
+          if (newLanguageName != null) {
+            // 1. Létrehozzuk az új Locale objektumot
+            final newLocaleCode = languageToLocale[newLanguageName] ?? 'hu';
+            final newLocale = Locale(newLocaleCode);
+            // 2. Szólunk a Provider-nek, hogy változott a nyelv.
+            // Ez automatikusan újraépíti a teljes UI-t a megfelelő szövegekkel!
+            Provider.of<LocaleProvider>(context, listen: false).setLocale(newLocale);
+            // 3. Elmentjük a választást a helyi tárhelyre a következő induláshoz.
+            Preferences.setPreferredLanguage(newLanguageName);
+            // TODO: API hívás a szerver felé, hogy az adatbázisban is frissüljön.
+          }
         },
         dropdownMenuEntries: [
           _buildDropdownMenuEntry("Magyar", "Magyar"),
@@ -269,8 +316,7 @@ class _LoginUIState extends State<LoginUI> {
     );
   }
 
-  DropdownMenuEntry<String> _buildDropdownMenuEntry(
-      dynamic value, String label) {
+  DropdownMenuEntry<String> _buildDropdownMenuEntry(dynamic value, String label) {
     //ez a metódus felel maga a kiválasztható értékek megjelenítéséért!
     return DropdownMenuEntry(
       style: TextButton.styleFrom(
@@ -316,32 +362,28 @@ class _LoginUIState extends State<LoginUI> {
             ],
           ),
           _buildRegistrationButton(),
-          _chatexWidget(),
+          _buildChatexWidget(),
         ],
       ),
     );
   }
 
   Widget _buildEmailWidget() {
-    //ez a metódus felépíti az email FormBuilderTextField mezőt amit
-    //a name property alapján beazonosít a FormBuilder (azzal tudunk hivatkozni rá!)
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10, right: 10, left: 10),
       child: FormBuilderTextField(
         key: const Key("email"),
         name: "email",
-        //a validálás csak akkor történik ha a felhasználó elkezd írni
         autovalidateMode: AutovalidateMode.onUserInteraction,
-        //ezek alapján:
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
               regex: RegExp(
-                r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                emailValidationRegex,
                 unicode: true,
               ),
-              errorText: _selectedLanguage == "Magyar"
-                  ? "Az email cím érvénytelen!"
-                  : "The email address is invalid!",
+              errorText: l10n.emailIsInvalid,
               checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
@@ -351,17 +393,14 @@ class _LoginUIState extends State<LoginUI> {
           color: Colors.white,
           fontSize: 20.0,
         ),
-        //meghívjuk a saját egységes, passwordnál is használt InputDecorationünk-et
-        decoration: _decorationForInput(
-            _emailController,
-            _selectedLanguage == "Magyar" ? "E-mail cím" : "E-mail address",
-            _isEmailFocused),
+        decoration: _decorationForInput(_emailController, l10n.emailAddress, _isEmailFocused),
       ),
     );
   }
 
   Widget _buildPasswordWidget() {
-    //ugyanarra a mintára alakítjuk ki, mint az email mezőt!
+    final l10n = AppLocalizations.of(context)!;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 10, left: 10, right: 10),
       child: FormBuilderTextField(
@@ -369,36 +408,22 @@ class _LoginUIState extends State<LoginUI> {
         name: "password",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.minLength(8,
-              errorText: _selectedLanguage == "Magyar"
-                  ? "A jelszó túl rövid! (min 8 karakter)"
-                  : "The password is too short! (min 8 characters)",
-              checkNullOrEmpty: false),
-          FormBuilderValidators.maxLength(20,
-              errorText: _selectedLanguage == "Magyar"
-                  ? "A jelszó túl hosszú! (max 20 karakter)"
-                  : "The password is too long! (max 20 characters)",
-              checkNullOrEmpty: false),
+          FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordIsTooShort, checkNullOrEmpty: false),
+          FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordIsTooLong, checkNullOrEmpty: false),
           FormBuilderValidators.hasUppercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Lu}', unicode: true),
-              errorText: _selectedLanguage == "Magyar"
-                  ? "A jelszónak legalább 1 nagybetűt tartalmaznia kell!"
-                  : "The password must contain at least 1 uppercase letter!",
+              errorText: l10n.passwordNeedsUppercase,
               checkNullOrEmpty: false),
           FormBuilderValidators.hasLowercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Ll}', unicode: true),
-              errorText: _selectedLanguage == "Magyar"
-                  ? "A jelszónak legalább 1 kisbetűt tartalmaznia kell!"
-                  : "The password must contain at least 1 lowercase letter!",
+              errorText: l10n.passwordNeedsLowercase,
               checkNullOrEmpty: false),
           FormBuilderValidators.hasNumericChars(
               atLeast: 1,
               regex: RegExp(r'[0-9]', unicode: true),
-              errorText: _selectedLanguage == "Magyar"
-                  ? "A jelszónak legalább 1 számot tartalmaznia kell!"
-                  : "The password must contain at least 1 number!",
+              errorText: l10n.passwordNeedsNumber,
               checkNullOrEmpty: false),
         ]),
         focusNode: _passwordFocusNode,
@@ -410,7 +435,7 @@ class _LoginUIState extends State<LoginUI> {
         ),
         decoration: _decorationForInput(
           _passwordController,
-          _selectedLanguage == "Magyar" ? "Jelszó" : "Password",
+          l10n.password,
           _isPasswordFocused,
           onVisibilityToggle: () {
             setState(() {
@@ -433,16 +458,11 @@ class _LoginUIState extends State<LoginUI> {
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       suffixIcon: (onVisibilityToggle == null)
-          //ha nincs megadva a onVisibilityToggle metódus akkor csak a tartalom törlő gomb lesz a suffix helyén (email mező),
-          ? (controller.text.isNotEmpty
-              ? _buildDeleteContentIcon(controller)
-              : null)
-          //de ha megadjuk akkor már a password visibility ikon is megfog jelenni (állandóan), míg a tartalom törlő csak tartalomnál!
+          ? (controller.text.isNotEmpty ? _buildDeleteContentIcon(controller) : null)
           : Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (controller.text.isNotEmpty)
-                  _buildDeleteContentIcon(controller),
+                if (controller.text.isNotEmpty) _buildDeleteContentIcon(controller),
                 Padding(
                   padding: const EdgeInsets.only(left: 15),
                   child: GestureDetector(
@@ -483,7 +503,6 @@ class _LoginUIState extends State<LoginUI> {
   }
 
   Widget _buildDeleteContentIcon(TextEditingController controller) {
-    //ezt hívjuk a _decorationForInput-nál, ami a tartalom törlést jeleníti meg
     return GestureDetector(
       onTap: () => controller.clear(),
       child: const Icon(
@@ -493,8 +512,25 @@ class _LoginUIState extends State<LoginUI> {
     );
   }
 
+  Future<void> closeKeyboardSaveValidateProceedLogin() async {
+    //bezárjuk a billentyűzetet hogy ne legyen lag és hogy látszódjön a toast üzenet!
+    FocusScope.of(context).unfocus();
+    if (_formKey.currentState!.saveAndValidate()) {
+      final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+      final language = localeToLanguage[localeProvider.locale?.languageCode] ?? 'Magyar';
+      await AuthService().logIn(
+          email: _emailController,
+          password: _passwordController,
+          context: context,
+          language: language
+          );
+    }
+  }
+
   Widget _buildLoginButton() {
     //bejelentkezés gomb, dinamikus frissítéssel
+    final l10n = AppLocalizations.of(context)!;
+
     return Row(
       children: [
         Expanded(
@@ -505,28 +541,13 @@ class _LoginUIState extends State<LoginUI> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.deepPurpleAccent,
                 foregroundColor: Colors.white,
-                //ha _isLogInDisabled = true, akkor ki van kapcsolva amit az onPressed alapján tud meg a gomb!
                 disabledBackgroundColor: Colors.grey[700],
                 disabledForegroundColor: Colors.white,
                 elevation: 5,
               ),
-              onPressed: _isLogInDisabled
-                  ? null
-                  : () async {
-                      //bezárjuk a billentyűzetet hogy ne legyen lag és hogy látszódjön a toast üzenet!
-                      FocusScope.of(context).unfocus();
-                      if (_formKey.currentState!.saveAndValidate()) {
-                        //elmentjük az adatokat, majd elküldjük az AuthService-nek
-                        await AuthService().logIn(
-                          email: _emailController,
-                          password: _passwordController,
-                          context: context,
-                          language: _selectedLanguage,
-                        );
-                      }
-                    },
+              onPressed: _isLogInDisabled ? null : closeKeyboardSaveValidateProceedLogin,
               child: Text(
-                _selectedLanguage == "Magyar" ? "Bejelentkezés" : "Login",
+                l10n.login,
                 style: const TextStyle(
                   fontSize: 20,
                   height: 3.0,
@@ -542,14 +563,17 @@ class _LoginUIState extends State<LoginUI> {
   }
 
   Widget _buildForgotPasswordButton() {
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+    final language = localeToLanguage[localeProvider.locale?.languageCode] ?? 'Magyar';
+
     return TextButton(
       onPressed: () {
-        //nyomásra átvisz a reset_password.dart-ra
         Navigator.push(
           context,
           MaterialPageRoute(
             builder: (context) => ForgotPasswordPage(
-              language: _selectedLanguage,
+              language: language,
             ),
           ),
         );
@@ -563,15 +587,16 @@ class _LoginUIState extends State<LoginUI> {
         ),
       ),
       child: Text(
-        _selectedLanguage == "Magyar"
-            ? "Elfelejtett jelszó"
-            : "Forgot password",
+        l10n.forgotPassword,
       ),
     );
   }
 
   Widget _buildRegistrationButton() {
-    //Align widgettel lent és középre igazítottuk és Expanded widget-tel (első) ott tartjuk
+    final l10n = AppLocalizations.of(context)!;
+    final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
+    final language = localeToLanguage[localeProvider.locale?.languageCode] ?? 'Magyar';
+
     return Expanded(
       flex: 1,
       child: Align(
@@ -594,7 +619,7 @@ class _LoginUIState extends State<LoginUI> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => SignUp(
-                          language: _selectedLanguage,
+                          language: language,
                         ),
                       ),
                     );
@@ -605,9 +630,7 @@ class _LoginUIState extends State<LoginUI> {
                     elevation: 5,
                   ),
                   child: Text(
-                    _selectedLanguage == "Magyar"
-                        ? "Új fiók létrehozása"
-                        : "Create a new account",
+                    l10n.createNewAccount,
                     style: const TextStyle(
                       fontSize: 20,
                       height: 3.0,
@@ -624,7 +647,7 @@ class _LoginUIState extends State<LoginUI> {
     );
   }
 
-  Widget _chatexWidget() {
+  Widget _buildChatexWidget() {
     return const Padding(
       padding: EdgeInsets.only(bottom: 10),
       child: Row(

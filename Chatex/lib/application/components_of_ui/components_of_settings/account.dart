@@ -8,6 +8,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/main.dart';
 import 'package:chatex/logic/preferences.dart';
 import 'package:chatex/logic/toast_message.dart';
+import 'package:chatex/constants/validation_constants.dart';
 import 'dart:typed_data';
 import 'dart:developer';
 import 'dart:convert';
@@ -759,14 +760,14 @@ class _AccountSettingState extends State<AccountSetting> {
                           },
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.minLength(
-                              3,
+                              usernameMinLength,
                               errorText: Preferences.isHungarian
                                   ? "A felhasználónév\ntúl rövid! (min 3)"
                                   : "The username is\ntoo short! (min 3)",
                               checkNullOrEmpty: false,
                             ),
                             FormBuilderValidators.maxLength(
-                              20,
+                              usernameMaxLength,
                               errorText: Preferences.isHungarian
                                   ? "A felhasználónév\ntúl hosszú! (max 20)"
                                   : "The username is\ntoo long! (max 20)",
@@ -797,7 +798,7 @@ class _AccountSettingState extends State<AccountSetting> {
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.email(
                                 regex: RegExp(
-                                    r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                                    emailValidationRegex,
                                     unicode: true),
                                 errorText: Preferences.isHungarian
                                     ? "Az email cím\nérvénytelen!"
@@ -847,12 +848,12 @@ class _AccountSettingState extends State<AccountSetting> {
                 letterSpacing: 1.0,
               ),
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.minLength(8,
+                FormBuilderValidators.minLength(passwordMinLength,
                     errorText: Preferences.isHungarian
                         ? "A jelszó túl rövid! (min 8 karakter)"
                         : "The password is too short! (min 8 characters)",
                     checkNullOrEmpty: false),
-                FormBuilderValidators.maxLength(20,
+                FormBuilderValidators.maxLength(passwordMaxLength,
                     errorText: Preferences.isHungarian
                         ? "A jelszó túl hosszú! (max 20 karakter)"
                         : "The password is too long! (max 20 characters)",
@@ -1115,7 +1116,7 @@ class _AccountSettingState extends State<AccountSetting> {
 
   InputDecoration _decorationForInput(
       //egységes dekoráció, kódismétlés nélkül
-      suffixIcon,
+      Widget? suffixIcon, //TODO: Widget? típus lett neki adva
       TextEditingController controller,
       String title,
       bool focusVariable,

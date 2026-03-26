@@ -1,0 +1,243 @@
+{
+  "@@locale": "en",
+  "languages": "Languages",
+  "language": "Language",
+  "emailIsInvalid": "The email address is invalid!",
+  "emailAddress": "E-mail address",
+  "passwordIsTooShort": "The password is too short! (min 8 characters)",
+  "passwordIsTooLong": "The password is too long! (max 20 characters)",
+  "passwordNeedsUppercase": "The password must contain at least 1 uppercase letter!",
+  "passwordNeedsLowercase": "The password must contain at least 1 lowercase letter!",
+  "passwordNeedsNumber": "The password must contain at least 1 number!",
+  "login": "Login",
+  "forgotPassword": "Forgot password",
+  "createNewAccount": "Create a new account",
+  "resetPassword": "Password Recovery",
+  "resetPasswordButton": "Reset password",
+  "resetPasswordInformation": "To reset your password\nenter your email address!",
+  "registration": "Registration",
+  "usernameTooShort": "The username is too short! (min 3)",
+  "usernameTooLong": "The username is too long! (max 20)",
+  "username": "Username",
+  "emailAddressHelp": "e.g.: someone@example.com",
+  "passwordRequirements": "Min. 8 characters, Max. 20 characters,\n1 lowercase, 1 uppercase, and 1 number.",
+  "passwordsDoesntMatch": "The passwords do not match!",
+  "passwordAgain": "Confirm password",
+  "registrationButton": "Sign up",
+  "successfulRegistration": "Successful registration!",
+  "emailIsAlreadyUsed": "User already exists with this email!",
+  "connectionErrorRegistration": "Connection error while\nregistration!",
+  "successfulLogin": "Successful login!",
+  "loginCredentialsError": "Incorrect email or password!",
+  "errorCode": "Error code:",
+  "connectionErrorLogin": "Connection error while\nlogging in!",
+  "connectionErrorLogout": "Connection error while\nlogging out!",
+  "resetPasswordEmailSent": "Password recovery email sent!",
+  "noUserWithThisEmail": "No user with this email address!",
+  "connectionErrorResetPassword": "Connection error while\nresetting password!",
+  "connectionError": "Connection error: {action}!",
+  "@connectionError": {
+    "placeholders": {
+      "action": {
+        "type": "String"
+      }
+    }
+  },
+  "permissionAccess": "Permission required for\n{typeOfPermission}!",
+  "@permissionAccess": {
+    "placeholders": {
+      "typeOfPermission": {
+        "type": "String"
+      }
+    }
+  },
+  "permissionDenied": "The {typeOfPermission} permission is denied!\nRedirecting to settings...",
+  "@permissionDenied": {
+    "placeholders": {
+      "typeOfPermission": {
+        "type": "String"
+      }
+    }
+  },
+  "notifications": "notifications",
+  "download": "download",
+  "chatex": "Chatex",
+  "groups": "Groups",
+  "createGroupsTitle": "Create groups",
+  "dummyGroupMessage": "Unfortunately, the groups feature was not completed for the exam... More information about the difficulties will be heard during our exam presentation!",
+  "settings": "Settings",
+  "createNewChat": "Create a new chat",
+  "createNewGroup": "Create a new group",
+  "connectionErrorLoadMessages": "Connection error while getting messages!",
+  "selectFiles": "Select file(s)",
+  "connectionErrorSettingRead": "Connection error while\nmarking the message as read!",
+  "connectionErrorMessageDelete": "Connection error while\ndeleting message!",
+  "justNow": "Just now",
+  "minutesAgo": "minute(s) ago",
+  "hoursAgo": "hour(s) ago",
+  "yesterday": "Yesterday",
+  "dayBefore": "The day before yesterday",
+  "errorTitle": "Error",
+  "error": "Error!",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "deleteMessageConfirm": "Are you sure you want to delete this message?",
+  "lastSeen": "Last seen: {formatLastSeen}",
+  "@lastSeen": {
+    "placeholders": {
+      "formatLastSeen": {
+        "type": "String"
+      }
+    }
+  },
+  "available": "Online",
+  "userInformation": "User Information",
+  "chatIsEmpty": "The chat is empty.",
+  "scrollToBottom": "Scroll to bottom",
+  "startWriting": "Start writing...",
+  "sendMessage": "Send message",
+  "emojiButton": "Emoji button",
+  "couldntLoadChatList": "Couldn't load the chat list!",
+  "connectionErrorGetChats": "Connection error while getting chats!",
+  "noChats": "You don't have any chats yet.\nStart one clicking on the ",
+  "iconPress": " icon!",
+  "you": "You: ",
+  "fileAttached": "📎 File attached",
+  "imageSent": "🖼️ Image sent",
+  "noMessageYet": "No message yet",
+  "couldntLoadFriends": "Couldn't load your friends!",
+  "connectionErrorGettingFriendList": "Connection error while\ngetting friend list!",
+  "connectionErrorGettingFriends": "Connection error while\nloading friends!",
+  "chatCreated": "Chat created!",
+  "connectionErrorStartingChat": "Connection error while\nstarting chat!",
+  "startChat": "Start a chat",
+  "searchFriends": "Search friends...",
+  "noResultsFound": "No results found",
+  "chatDeletedSuccesfully": "Chat deleted successfully!",
+  "userOutputDelete": "Failed to delete chat!",
+  "connectionErrorDeletingChat": "Connection error while\ndeleting chat!",
+  "chatInformation": "Chat information",
+  "deleteChat": "Delete chat",
+  "areYouSure": "Are you sure you want to delete the chat?",
+  "warning": "This action cannot be undone!",
+  "seen": "Seen",
+  "delivered": "Delivered",
+  "chats": "Chats",
+  "friends": "Friends",
+  "userOutputGroups": "Couldn't load your groups!",
+  "connectionErrorGettingGroupList": "Connection error while getting group chats!",
+  "userNoGroupsFirstHalf": "You aren't in any group chats.\nCreate one by clicking on the ",
+  "usersName": "users names",
+  "connectionErrorFriendRequestsNumber": "Connection error while\nfetching friend requests (count)!",
+  "connectionErrorGettingUsers": "Connection error while\nfetching users!",
+  "connectionErrorFriendRequestStatus": "Connection error while fetching friend request status!",
+  "friendRequestSent": "Friend request sent!",
+  "errorOccurredFriendRequest": "Error occurred while sending the friend request!",
+  "connectionErrorSendingFriendRequest": "Connection error while\nsending the friend request!",
+  "friendRequests": "Friend requests",
+  "requests": "Friend Requests",
+  "manageFriends": "Manage friends",
+  "peopleUsername": "Enter the username!",
+  "friend": "Friend",
+  "pending": "Pending",
+  "add": "Add",
+  "general": "General",
+  "account": "Account",
+  "manageAccount": "Account management",
+  "searchSettings": "Search settings...",
+  "successfulChange": "Successful change!",
+  "unsuccessfulChange": "The change was unsuccessful!",
+  "connectionErrorChangingStatus": "Connection error while\nchanging status!",
+  "logout": "Logout",
+  "logoutConfirm": "Are you sure you want to logout?",
+  "yes": "Yes",
+  "unknownMimeType": "An unknown MIME type has been detected!",
+  "offline": "offline",
+  "status": "Status",
+  "connectionErrorFriendRequests": "Connection error while\nloading friend requests!",
+  "friendRequestAccepted": "Friend request accepted!",
+  "errorOccuredAccepting": "An error occured while accepting!",
+  "connectionErrorAcceptingFriendRequests": "Connection error while\naccepting request!",
+  "friendRequestDeclined": "Friend request declined!",
+  "errorOccuredDeclining": "An error occured while declining",
+  "connectionErrorDecliningFriendRequests": "Connection error while\ndeclining friend request!",
+  "noNewFriendRequest": "No new friend requests",
+  "errorWhileDecodingImage": "Error in picture decoding!",
+  "friendRequest": "Friend request",
+  "friendDeleted": "Friend removed!",
+  "errorWhileDeletingFriend": "Error while deleting friend",
+  "connectionErrorDeletingFriend": "Connection error while\nremoving friend!",
+  "currentlyNoFriends": "Currently you have no friends!",
+  "currentFriends": "Your current friends",
+  "removeFriend": "Remove friend",
+  "removeFriendConfirm": "Are you sure you want to remove this friend?",
+  "updatedSuccessfully": "{item} updated successfully!",
+  "@updatedSuccessfully": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdating": "Failed to update {item}!",
+  "@errorUpdating": {
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "errorUpdatingUsername": "Failed to update username!",
+  "connectionErrorUpdatingUsername": "Connection error while\nupdating username!",
+  "errorUpdatingEmail": "Failed to update email!",
+  "connectionErrorUpdatingEmail": "Connection error while\nupdating email!",
+  "errorUpdatingPassword": "Password update failed!",
+  "connectionErrorUpdatingPassword": "Connection error while\nupdating password!",
+  "unsupportedFileFormat": "Unsupported file format!",
+  "imageSelectedCanUpdate": "Image selected! You can now update it!",
+  "errorSelectingImage": "Error while selecting image!",
+  "errorUpdatingProfilePicture": "Failed to update profile picture!",
+  "connectionErrorUpdatingProfilePicture": "Connection error while\nupdating profile picture!",
+  "changesSaved": "Changes saved!",
+  "cannotModifyToSameValue": "Cannot modify to the same value(s)!",
+  "accountDeleted": "Account deleted!",
+  "errorDeletingAccount": "Error deleting account!",
+  "connectionErrorDeletingAccount": "Connection error while\ndeleting account!",
+  "accountDetails": "Account details",
+  "usernameCannotBeEmpty": "The username\ncannot be empty!",
+  "emailCannotBeEmpty": "The email address\ncannot be empty!",
+  "changePassword": "Change password",
+  "profilePicture": "Profile picture",
+  "fieldMustMatchPassword": "The field must match the password field!",
+  "saveChanges": "Save changes",
+  "deleteAccount": "Delete Account",
+  "areYouSureDeleteAccount": "Are you sure you want to delete your account?",
+  "password": "Password",
+  "errorUpdatingLanguage": "Error while\nupdating language!",
+  "connectionErrorUpdatingLanguage": "Connection error while\nupdating language!",
+  "filesTooLargeTitle": "The files are too large!",
+  "filesTooLargeContent": "You can only send files up to 100 MB!",
+  "imagesTooLargeTitle": "The images are too large!",
+  "imagesTooLargeContent": "You can only send files up to 50 MB!",
+  "messageTooLongTitle": "Message too long!",
+  "messageTooLongContent": "You can send a message up to 5000 characters!",
+  "back": "Back",
+  "fileUpload": "File upload",
+  "camera": "Camera",
+  "gallery": "Gallery",
+  "downloadReady": "Download ready",
+  "savedTo": "{fileName} saved to:\n{path}",
+  "@savedTo": {
+    "placeholders": {
+      "fileName": {
+        "type": "String"
+      },
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "fileDownloadError": "Failed to download the file!",
+  "imageSaved": "Image saved",
+  "imageDownloadError": "Failed to download the image!"
+}

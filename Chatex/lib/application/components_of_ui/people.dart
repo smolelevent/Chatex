@@ -7,6 +7,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/logic/preferences.dart';
 import 'package:chatex/application/components_of_ui/components_of_people/friend_requests.dart';
 import 'package:chatex/application/components_of_ui/components_of_people/manage_friends.dart';
+import 'package:chatex/constants/validation_constants.dart';
 import 'package:chatex/logic/toast_message.dart';
 import 'dart:convert';
 import 'dart:async';
@@ -111,7 +112,7 @@ class _PeopleState extends State<People> {
     _timer = Timer(
       const Duration(milliseconds: 500), //fél másodpercig vár
       () async {
-        if (query.isEmpty || query.length < 3 || query.length > 20) {
+        if (query.isEmpty || query.length < usernameMinLength || query.length > usernameMaxLength) {
           setState(() {
             //eredmény üres ha nem felel meg az if-nek
             _userSearchResults = [];
@@ -415,14 +416,14 @@ class _PeopleState extends State<People> {
         validator: FormBuilderValidators.compose([
           //a regisztrációkor is érvényes követelmények alapján keresünk
           FormBuilderValidators.minLength(
-            3,
+            usernameMinLength,
             errorText: Preferences.isHungarian
                 ? "A felhasználónév túl rövid! (min 3)"
                 : "The username is too short! (min 3)",
             checkNullOrEmpty: false,
           ),
           FormBuilderValidators.maxLength(
-            20,
+            usernameMaxLength,
             errorText: Preferences.isHungarian
                 ? "A felhasználónév túl hosszú! (max 20)"
                 : "The username is too long! (max 20)",

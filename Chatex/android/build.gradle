@@ -1,4 +1,5 @@
 buildscript {
+    ext.kotlin_version = '2.1.0'
     repositories {
         google()
         mavenCentral()
@@ -7,6 +8,7 @@ buildscript {
     dependencies {
         classpath 'com.android.tools.build:gradle:8.2.1'
         //classpath 'com.android.tools.build:gradle:8.13'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath 'com.google.gms:google-services:4.4.2'
     }
 }
@@ -32,4 +34,29 @@ subprojects {
 
 tasks.register("clean", Delete) {
     delete rootProject.buildDir
+}
+
+// --- Globális beállítások az összes Flutter pluginhoz ---
+subprojects {
+    project.tasks.withType(JavaCompile).configureEach {
+        // Eltünteti a "source value 8 is obsolete" figyelmeztetéseket
+        options.compilerArgs << "-Xlint:-options" 
+    }
+    project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+        // Kényszerítjük, hogy minden külső csomag is Java 17-et használjon Kotlinhoz
+        kotlinOptions.jvmTarget = "17"
+    }
+    //hogy a dependecyk is jó java verzióban menjenek
+    if (project.name != "app") {
+        project.afterEvaluate {
+            if (project.hasProperty('android')) {
+                project.android {
+                    compileOptions {
+                        sourceCompatibility = JavaVersion.VERSION_17
+                        targetCompatibility = JavaVersion.VERSION_17
+                    }
+                }
+            }
+        }
+    }
 }

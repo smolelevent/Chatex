@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="dataSourceStorageLocal" created-in="IU-253.31033.145">
+  <component name="dataSourceStorageLocal" created-in="IU-261.22158.277">
     <data-source name="dbchatex@localhost" uuid="46ac8aad-d677-43ed-8fe7-3520e042d654">
       <database-info product="" version="" jdbc-version="" driver-name="" driver-version="" dbms="MARIADB" />
       <user-name>root</user-name>

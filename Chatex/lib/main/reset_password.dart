@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/logic/auth.dart';
+import 'package:chatex/l10n/app_localizations.dart';
+import 'package:chatex/constants/validation_constants.dart';
 
 //ForgotPasswordPage OSZTÁLY ELEJE ----------------------------------------------------------------
 class ForgotPasswordPage extends StatefulWidget {
@@ -82,10 +84,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 //DIZÁJN ELEMEK ELEJE -----------------------------------------------------------------------------
 
   PreferredSizeWidget _buildAppbar() {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
-      title: Text(
-        widget.language == "Magyar" ? "Jelszó helyreállítás" : "Reset password",
-      ),
+      title: Text(l10n.resetPassword),
       backgroundColor: Colors.black,
       foregroundColor: Colors.deepPurpleAccent,
       shadowColor: Colors.deepPurpleAccent,
@@ -123,12 +124,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget _buildInformationText() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.only(top: 25, bottom: 25),
       child: Text(
-        widget.language == "Magyar"
-            ? "A jelszó helyreállításához\nadja meg az e-mail címét!"
-            : "To reset your password\nenter your email address!",
+        l10n.resetPasswordInformation,
         textAlign: TextAlign.center,
         style: const TextStyle(
           color: Colors.white,
@@ -140,6 +140,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget _buildEmailWidget() {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(10.0, 5.0, 10.0, 10.0),
       child: FormBuilderTextField(
@@ -148,11 +149,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
               regex: RegExp(
-                  r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                  emailValidationRegex,
                   unicode: true),
-              errorText: widget.language == "Magyar"
-                  ? "Az email cím érvénytelen!"
-                  : "The email address is invalid!",
+              errorText: l10n.emailIsInvalid,
               checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
@@ -170,9 +169,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
               : null,
           hintText: _isEmailFocused
               ? null
-              : widget.language == "Magyar"
-                  ? "E-mail cím"
-                  : "Email address",
+              : l10n.emailAddress,
           hintStyle: TextStyle(
             color: Colors.grey[600],
             fontStyle: FontStyle.italic,
@@ -180,9 +177,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             fontSize: 20.0,
           ),
           labelText: _isEmailFocused
-              ? widget.language == "Magyar"
-                  ? "E-mail cím"
-                  : "Email address"
+              ? l10n.emailAddress
               : null,
           labelStyle: const TextStyle(
             color: Colors.white,
@@ -217,6 +212,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget _buildPasswordResetButton() {
+    final l10n = AppLocalizations.of(context)!;
     return Expanded(
       //flex: 0 azt csinálja hogy a Chatex felirathoz képest nem foglal el semmien arányt,
       //így csak annyit amennyire szüksége van!
@@ -261,9 +257,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                         }
                       },
                 child: Text(
-                  widget.language == "Magyar"
-                      ? "Jelszó helyreállítása"
-                      : "Reset password",
+                l10n.resetPasswordButton,
                   style: TextStyle(
                     fontSize: 20 * MediaQuery.of(context).textScaler.scale(1.0),
                     //minden eszközön elvileg ugyanakkora lesz (px helyett dp)
@@ -290,19 +284,20 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Widget _chatexWidget() {
-    return const Expanded(
+    final l10n = AppLocalizations.of(context)!;
+    return Expanded(
       //flex: 1-el a képernyő aljára helyezzük
       flex: 1,
       child: Padding(
-        padding: EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(bottom: 10),
         child: Align(
           alignment: Alignment.bottomCenter,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
-                "Chatex",
-                style: TextStyle(
+                l10n.chatex,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 20.0,
                   fontWeight: FontWeight.w500,

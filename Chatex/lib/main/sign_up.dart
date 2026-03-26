@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/logic/auth.dart';
+import 'package:chatex/l10n/app_localizations.dart';
+import 'package:chatex/constants/validation_constants.dart';
 
 //SignUp OSZTÁLY ELEJE ----------------------------------------------------------------------------
 class SignUp extends StatefulWidget {
@@ -120,10 +122,9 @@ class _SignUpState extends State<SignUp> {
 //DIZÁJN ELEMEK ELEJE -----------------------------------------------------------------------------
 
   PreferredSizeWidget _buildAppbar() {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
-      title: Text(
-        widget.language == "Magyar" ? "Regisztráció" : "Registration",
-      ),
+      title: Text(l10n.registration),
       backgroundColor: Colors.black,
       foregroundColor: Colors.deepPurpleAccent,
       shadowColor: Colors.deepPurpleAccent,
@@ -239,6 +240,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildUsernameWidget(Key key) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(10.0, 25.0, 10.0, 10.0),
       child: FormBuilderTextField(
@@ -246,17 +248,13 @@ class _SignUpState extends State<SignUp> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.minLength(
-            3,
-            errorText: widget.language == "Magyar"
-                ? "A felhasználónév túl rövid! (min 3)"
-                : "The username is too short! (min 3)",
+            usernameMinLength,
+            errorText: l10n.usernameTooShort,
             checkNullOrEmpty: false,
           ),
           FormBuilderValidators.maxLength(
-            20,
-            errorText: widget.language == "Magyar"
-                ? "A felhasználónév túl hosszú! (max 20)"
-                : "The username is too long! (max 20)",
+            usernameMaxLength,
+            errorText: l10n.usernameTooLong,
             checkNullOrEmpty: false,
           ),
         ]),
@@ -269,7 +267,7 @@ class _SignUpState extends State<SignUp> {
         ),
         decoration: _decorationForInput(
           _usernameController,
-          widget.language == "Magyar" ? "Felhasználónév" : "Username",
+          l10n.username,
           _isUsernameFocused,
           null,
         ),
@@ -278,6 +276,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildEmailWidget(Key key) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 20, 10, 10),
       child: FormBuilderTextField(
@@ -286,11 +285,9 @@ class _SignUpState extends State<SignUp> {
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
               regex: RegExp(
-                  r"^[a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",
+                  emailValidationRegex,
                   unicode: true),
-              errorText: widget.language == "Magyar"
-                  ? "Az email cím érvénytelen!"
-                  : "The email address is invalid!",
+              errorText: l10n.emailIsInvalid,
               checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
@@ -302,53 +299,38 @@ class _SignUpState extends State<SignUp> {
         ),
         decoration: _decorationForInput(
           _emailController,
-          widget.language == "Magyar" ? "E-mail cím" : "E-mail address",
+          l10n.emailAddress,
           _isEmailFocused,
-          widget.language == "Magyar"
-              ? "pl: valaki@kiszolgalo.hu"
-              : "eg: example@example.com",
+          l10n.emailAddressHelp,
         ),
       ),
     );
   }
 
   Widget _buildPasswordWidget(Key key) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 20, 10, 10),
       child: FormBuilderTextField(
         name: "password",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.minLength(8,
-              errorText: widget.language == "Magyar"
-                  ? "A jelszó túl rövid! (min 8 karakter)"
-                  : "The password is too short! (min 8 characters)",
-              checkNullOrEmpty: false),
-          FormBuilderValidators.maxLength(20,
-              errorText: widget.language == "Magyar"
-                  ? "A jelszó túl hosszú! (max 20 karakter)"
-                  : "The password is too long! (max 20 characters)",
-              checkNullOrEmpty: false),
+          FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordIsTooShort, checkNullOrEmpty: false),
+          FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordIsTooLong, checkNullOrEmpty: false),
           FormBuilderValidators.hasUppercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Lu}', unicode: true),
-              errorText: widget.language == "Magyar"
-                  ? "A jelszónak legalább 1 nagybetűt tartalmaznia kell!"
-                  : "The password must contain at least 1 uppercase letter!",
+              errorText: l10n.passwordNeedsUppercase,
               checkNullOrEmpty: false),
           FormBuilderValidators.hasLowercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Ll}', unicode: true),
-              errorText: widget.language == "Magyar"
-                  ? "A jelszónak legalább 1 kisbetűt tartalmaznia kell!"
-                  : "The password must contain at least 1 lowercase letter!",
+              errorText: l10n.passwordNeedsLowercase,
               checkNullOrEmpty: false),
           FormBuilderValidators.hasNumericChars(
               atLeast: 1,
               regex: RegExp(r'[0-9]', unicode: true),
-              errorText: widget.language == "Magyar"
-                  ? "A jelszónak legalább 1 számot tartalmaznia kell!"
-                  : "The password must contain at least 1 number!",
+              errorText: l10n.passwordNeedsNumber,
               checkNullOrEmpty: false),
         ]),
         focusNode: _passwordFocusNode,
@@ -360,11 +342,9 @@ class _SignUpState extends State<SignUp> {
         ),
         decoration: _decorationForInput(
           _passwordController,
-          widget.language == "Magyar" ? "Jelszó" : "Password",
+          l10n.password,
           _isPasswordFocused,
-          widget.language == "Magyar"
-              ? "Min. 8 karakter, Max. 20 karakter,\n1 kisbetű, 1 nagybetű, és 1 szám."
-              : "Min. 8 characters, Max. 20 characters,\n1 lowercase, 1 uppercase, and 1 number.",
+          l10n.passwordRequirements,
           onVisibilityToggle: () {
             setState(() {
               _isPasswordNotVisible = !_isPasswordNotVisible;
@@ -377,17 +357,14 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildPasswordConfirmWidget(Key key) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       margin: const EdgeInsets.fromLTRB(10, 20, 10, 30),
       child: FormBuilderTextField(
         name: "password_confirm",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.equal(_passwordController.text,
-              errorText: widget.language == "Magyar"
-                  ? "A jelszavak nem egyeznek meg!"
-                  : "The passwords do not match!",
-              checkNullOrEmpty: false),
+          FormBuilderValidators.equal(_passwordController.text, errorText: l10n.passwordsDoesntMatch, checkNullOrEmpty: false),
         ]),
         focusNode: _passwordConfirmFocusNode,
         controller: _passwordConfirmController,
@@ -398,7 +375,7 @@ class _SignUpState extends State<SignUp> {
         ),
         decoration: _decorationForInput(
           _passwordConfirmController,
-          widget.language == "Magyar" ? "Jelszó újra" : "Confirm password",
+          l10n.passwordAgain,
           _isPasswordConfirmFocused,
           null,
           onVisibilityToggle: () {
@@ -413,6 +390,7 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _buildSignupWidget(BuildContext context, Key key) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         Expanded(
@@ -444,7 +422,7 @@ class _SignUpState extends State<SignUp> {
                       }
                     },
               child: Text(
-                widget.language == "Magyar" ? "Regisztrálás" : "Sign up",
+              l10n.registrationButton,
                 style: TextStyle(
                   //minden kijelzőn egységes 20-as méret
                   fontSize: 20 * MediaQuery.of(context).textScaler.scale(1.0),
@@ -461,7 +439,8 @@ class _SignUpState extends State<SignUp> {
   }
 
   Widget _chatexWidget() {
-    return const Expanded(
+    final l10n = AppLocalizations.of(context)!;
+    return Expanded(
       flex: 0,
       child: Row(
         children: [
@@ -469,13 +448,13 @@ class _SignUpState extends State<SignUp> {
             //teljes szélességben legyen
             flex: 1,
             child: Padding(
-              padding: EdgeInsets.only(bottom: 10),
+              padding: const EdgeInsets.only(bottom: 10),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Chatex",
-                    style: TextStyle(
+                    l10n.chatex,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontSize: 20.0,
                       fontWeight: FontWeight.w500,

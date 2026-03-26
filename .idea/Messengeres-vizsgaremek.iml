@@ -3,6 +3,7 @@
   <component name="NewModuleRootManager" inherit-compiler-output="true">
     <exclude-output />
     <content url="file://$MODULE_DIR$">
+      <sourceFolder url="file://$MODULE_DIR$/xampp_server/phpMyAdmin/libraries/classes" isTestSource="false" packagePrefix="PhpMyAdmin" />
       <excludeFolder url="file://$MODULE_DIR$/Chatex/.dart_tool" />
       <excludeFolder url="file://$MODULE_DIR$/Chatex/.pub" />
       <excludeFolder url="file://$MODULE_DIR$/Chatex/build" />

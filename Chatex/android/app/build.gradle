@@ -1,8 +1,7 @@
 plugins {
     id "com.android.application"
-    // START: FlutterFire Configuration
     id 'com.google.gms.google-services'
-    // END: FlutterFire Configuration
+    id "kotlin-android"
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id "dev.flutter.flutter-gradle-plugin"
 }
@@ -18,21 +17,23 @@ dependencies {
 android {
     namespace = "com.example.chatex"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "28.0.13004108" //régi ndk verzió:
-    buildToolsVersion = "36.0.0" //régi android tools verzió: 35.0.1
-    
+    ndkVersion = "29.0.14206865" //mindig a legfrissebb ndk-t használjam expliciten meg kell mondani mert a projekt régivel van létrehozva
 
     externalNativeBuild {
         cmake {
-            version "3.31.6" // alap: 3.22.1
+            version "4.1.2" //manuálisan kell itt is a legfrissebre tenni
         }
     }
 
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21 //alap: VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_21 //alap: VERSION_1_8
-        coreLibraryDesugaringEnabled true // 👈 EZ KELL
+        sourceCompatibility = JavaVersion.VERSION_17 //ajánlott hiába nem a legfrissebb
+        targetCompatibility = JavaVersion.VERSION_17
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = '17'
     }
 
     defaultConfig {
@@ -40,7 +41,7 @@ android {
         applicationId = "com.example.chatex"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = 23
+        minSdkVersion = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
