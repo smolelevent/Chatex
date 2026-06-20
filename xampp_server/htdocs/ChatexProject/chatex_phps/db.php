@@ -5,10 +5,11 @@ $serverUsername = "root";
 $serverPassword = "";
 $dbname = "dbchatex";
 
-$conn = new mysqli($serverIP, $serverUsername, $serverPassword, $dbname);
-
-if ($conn->connect_error) {
-    http_response_code(500); // Belső szerverhiba
-    echo json_encode(["message" => "Adatbázis kapcsolat sikertelen: " . $conn->connect_error]);
-    exit();
+function getDbConnection(): mysqli {
+    global $serverIP, $serverUsername, $serverPassword, $dbname;
+    $conn = new mysqli($serverIP, $serverUsername, $serverPassword, $dbname);
+    if($conn->connect_error){
+        throw new mysqli_sql_exception("Kapcsolati hiba: " . $conn->connect_error);
+    }
+    return $conn;
 }

@@ -1,11 +1,6 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . "/../db.php"; //Adatbázis kapcsolat
+require_once __DIR__ . '/../bootstrap.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -19,6 +14,10 @@ if (!in_array($newStatus, $allowed)) {
     echo json_encode(["success" => false, "message" => "Érvénytelen státusz!"]);
     exit;
 }
+
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
 
 $stmt = $conn->prepare("UPDATE users SET status = ? WHERE id = ?");
 $stmt->bind_param("si", $newStatus, $userId);

@@ -49,13 +49,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
-  final TextEditingController _messageController =
-      TextEditingController(); //az input mező tartalmát tudjuk kezeleni
+  final TextEditingController _messageController = TextEditingController(); //az input mező tartalmát tudjuk kezeleni
   final ScrollController _scrollController =
       ScrollController(); //a tekerés helyzetét tudjuk figyelni ezáltal pl.: scrollToBottomButton
 
-  final FocusNode _inputFocusNode =
-      FocusNode(); //szövegmező fokuszálásának a meghatározásához
+  final FocusNode _inputFocusNode = FocusNode(); //szövegmező fokuszálásának a meghatározásához
   bool _isInputFocused = false; //amit itt mentünk el
 
   bool get _showSendIcon {
@@ -80,8 +78,7 @@ class _ChatScreenState extends State<ChatScreen> {
   late WebSocketChannel _channel;
   Timer? _keepAliveTimer; //"életben tartó" ping küldésért felelős
 
-  List<Map<String, dynamic>> _messages =
-      <Map<String, dynamic>>[]; //üzenetek listája
+  List<Map<String, dynamic>> _messages = <Map<String, dynamic>>[]; //üzenetek listája
   final List<PlatformFile> _attachments = []; //csatolmányok listája
 
   final ImagePicker _imagePicker = ImagePicker(); //kép választó
@@ -104,16 +101,13 @@ class _ChatScreenState extends State<ChatScreen> {
 
     _inputFocusNode.addListener(() {
       setState(() {
-        _isInputFocused =
-            _inputFocusNode.hasFocus; //eltároljuk ha fókuszban van
+        _isInputFocused = _inputFocusNode.hasFocus; //eltároljuk ha fókuszban van
       });
     });
 
     _messageController.addListener(() {
       setState(() {
-        _isInputFocused = _messageController.text
-            .trim()
-            .isNotEmpty; //az input mező íráskor nagy legyen
+        _isInputFocused = _messageController.text.trim().isNotEmpty; //az input mező íráskor nagy legyen
       });
     });
 
@@ -125,11 +119,9 @@ class _ChatScreenState extends State<ChatScreen> {
           _scrollController
               .offset; //a maximum scrollolható távolság (üzenetektől függ) - mennyire távolodtunk el az aljától
 
-      const thresholdRatio =
-          0.25; // alsó százaléktól eltávolodva jelenjen meg a gomb
-      final shouldShow = distanceFromBottom >
-          _scrollController.position.maxScrollExtent *
-              thresholdRatio; //maximum * 25%
+      const thresholdRatio = 0.25; // alsó százaléktól eltávolodva jelenjen meg a gomb
+      final shouldShow =
+          distanceFromBottom > _scrollController.position.maxScrollExtent * thresholdRatio; //maximum * 25%
 
       if (_showScrollToBottomButton != shouldShow) {
         setState(() {
@@ -174,22 +166,18 @@ class _ChatScreenState extends State<ChatScreen> {
       if (data['chat_id'] != widget.chatId) return; //ha rossz a chat id alapján
 
       final messageId = data['message_id'];
-      final index = _messages.indexWhere(
-          (msg) => msg['message_id'] == messageId); //van e egyező üzenet id
+      final index = _messages.indexWhere((msg) => msg['message_id'] == messageId); //van e egyező üzenet id
 
       if (index != -1) return;
 
-      final isForMe = data['receiver_id'] ==
-          Preferences
-              .getUserId(); //ha az üzenet a jelenlegi felhasználónak szól
+      final isForMe = data['receiver_id'] == Preferences.getUserId(); //ha az üzenet a jelenlegi felhasználónak szól
       if (isForMe && ModalRoute.of(context)?.isCurrent == true) {
         //és a chat_screen.dart a jelenlegi képernyő
         Future.delayed(
           const Duration(milliseconds: 500),
           () {
             _channel.sink.add(jsonEncode({
-              "message_type":
-                  "read_status_update", //akkor olvasva legyenek az üzenetek
+              "message_type": "read_status_update", //akkor olvasva legyenek az üzenetek
               "chat_id": widget.chatId,
               "user_id": Preferences.getUserId(),
             }));
@@ -233,12 +221,8 @@ class _ChatScreenState extends State<ChatScreen> {
           final attachments = data['attachments'] ?? [];
 
           if (attachments.isNotEmpty) {
-            final imageUrls = attachments
-                .map<String>((att) => att['download_url'].toString())
-                .toList();
-            final fileNames = attachments
-                .map<String>((att) => att['file_name'].toString())
-                .toList();
+            final imageUrls = attachments.map<String>((att) => att['download_url'].toString()).toList();
+            final fileNames = attachments.map<String>((att) => att['file_name'].toString()).toList();
 
             setState(() {
               _messages.add({
@@ -319,9 +303,7 @@ class _ChatScreenState extends State<ChatScreen> {
               'fileNames': fileNames,
               'downloadUrls': downloadUrls,
               'message_text':
-                  (message['message_text']?.toString().trim().isEmpty ?? true)
-                      ? null
-                      : message['message_text'],
+                  (message['message_text']?.toString().trim().isEmpty ?? true) ? null : message['message_text'],
             });
           } else {
             loadedMessages.add(message); //ha text típusú akkor csak hozzáadjuk
@@ -365,12 +347,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Future<void> _pickFiles() async {
-    final picked = await FilePicker.platform.pickFiles(
-      dialogTitle:
-          Preferences.isHungarian ? "Fájl(ok) kiválasztása" : "Select file(s)",
+    final picked = await FilePicker.pickFiles(
+      dialogTitle: Preferences.isHungarian ? "Fájl(ok) kiválasztása" : "Select file(s)",
       withData: true,
-      compressionQuality:
-          75, //25%-os tömörítés-sel juttatjuk el az adatbázishoz, letöltéskor pedig 100%
+      compressionQuality: 75, //25%-os tömörítés-sel juttatjuk el az adatbázishoz, letöltéskor pedig 100%
       allowMultiple: true,
       type: FileType.custom,
       allowedExtensions: [
@@ -424,8 +404,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   void _sendFiles(String? messageText) {
     final files = _attachments
-        .where((f) => !_isImageExtension(_getExtension(
-            f))) // csak nem kép adatokat veszünk ki az _attachments listából
+        .where((f) => !_isImageExtension(_getExtension(f))) // csak nem kép adatokat veszünk ki az _attachments listából
         .map((file) => {
               "file_name": file.name,
               "file_bytes": base64Encode(file.bytes!),
@@ -570,15 +549,11 @@ class _ChatScreenState extends State<ChatScreen> {
     //megnézzük hogy mit tartalmaz az üzenet (ezek a szöveg küldéshez kellenek)
     final hasFiles = _attachments.isNotEmpty;
 
-    final hasImages =
-        _attachments.any((f) => _isImageExtension(_getExtension(f)));
+    final hasImages = _attachments.any((f) => _isImageExtension(_getExtension(f)));
     //ezek az _attachments listát bontják szét (kép/fájl típusú küldéshez kell)
-    final hasOtherFiles =
-        _attachments.any((f) => !_isImageExtension(_getExtension(f)));
+    final hasOtherFiles = _attachments.any((f) => !_isImageExtension(_getExtension(f)));
 
-    String? currentText = _messageController.text.trim().isNotEmpty
-        ? _messageController.text.trim()
-        : null;
+    String? currentText = _messageController.text.trim().isNotEmpty ? _messageController.text.trim() : null;
 
     if (hasImages) {
       _sendImages(currentText);
@@ -608,8 +583,7 @@ class _ChatScreenState extends State<ChatScreen> {
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
           "chat_id": widget.chatId,
-          "user_id": Preferences
-              .getUserId(), //az a receiver_id aki megkapja tehát az user_id-t kell megadnunk
+          "user_id": Preferences.getUserId(), //az a receiver_id aki megkapja tehát az user_id-t kell megadnunk
         }),
       );
 
@@ -646,8 +620,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Uri.parse(deleteMessageUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "message_id":
-              messageId, //elküldjük annak az üzenetnek az id-ját amit törölni akarunk
+          "message_id": messageId, //elküldjük annak az üzenetnek az id-ját amit törölni akarunk
         }),
       );
 
@@ -703,10 +676,9 @@ class _ChatScreenState extends State<ChatScreen> {
           //3szor próbálkozik azzal hogy az aljára ugorjon a képernyő
           if (!_scrollController.hasClients || retry == 0) return;
 
-          final position = _scrollController
-              .position; //alapértelmezett pozíciója a _scrollController-nek (teteje vagy az alja)
-          final currentExtent = position
-              .pixels; //az alapértelmezett-től mennyire tér el (föl vagy le)
+          final position =
+              _scrollController.position; //alapértelmezett pozíciója a _scrollController-nek (teteje vagy az alja)
+          final currentExtent = position.pixels; //az alapértelmezett-től mennyire tér el (föl vagy le)
           final maxExtent = position.maxScrollExtent; //maximum scrollolhatóság
 
           // Ha még nem az alján vagyunk, újra próbáljuk
@@ -734,19 +706,13 @@ class _ChatScreenState extends State<ChatScreen> {
       if (difference.inMinutes < 1) {
         return Preferences.isHungarian ? "Épp most" : "Just now";
       } else if (difference.inMinutes < 60) {
-        return Preferences.isHungarian
-            ? "${difference.inMinutes} perce"
-            : "${difference.inMinutes} minute(s) ago";
+        return Preferences.isHungarian ? "${difference.inMinutes} perce" : "${difference.inMinutes} minute(s) ago";
       } else if (difference.inHours < 24) {
-        return Preferences.isHungarian
-            ? "${difference.inHours} órája"
-            : "${difference.inHours} hour(s) ago";
+        return Preferences.isHungarian ? "${difference.inHours} órája" : "${difference.inHours} hour(s) ago";
       } else if (difference.inDays == 1) {
         return Preferences.isHungarian ? "Tegnap" : "Yesterday";
       } else if (difference.inDays == 2) {
-        return Preferences.isHungarian
-            ? "Tegnap előtt"
-            : "The day before yesterday";
+        return Preferences.isHungarian ? "Tegnap előtt" : "The day before yesterday";
       } else {
         final formattedDate =
             "${lastSeen.year}.${lastSeen.month.toString().padLeft(2, '0')}.${lastSeen.day.toString().padLeft(2, '0')} "
@@ -758,8 +724,8 @@ class _ChatScreenState extends State<ChatScreen> {
     }
   }
 
-  void _showContentDialog(String hunTitleString, String engTitleString,
-      String hunContentString, String engContentString,
+  void _showContentDialog(
+      String hunTitleString, String engTitleString, String hunContentString, String engContentString,
       {List<Widget>? actions}) {
     showDialog(
       context: context,
@@ -862,8 +828,7 @@ class _ChatScreenState extends State<ChatScreen> {
     return SafeArea(
       child: Scaffold(
         floatingActionButton: _buildScrollToBottomButton(),
-        floatingActionButtonLocation:
-            FloatingActionButtonLocation.miniCenterFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.miniCenterFloat,
         resizeToAvoidBottomInset: true,
         backgroundColor: Colors.grey[850],
         appBar: _buildAppBar(),
@@ -1018,9 +983,7 @@ class _ChatScreenState extends State<ChatScreen> {
               width: 16,
               height: 16,
               decoration: BoxDecoration(
-                color: isOnline == "online" && signedIn == 1
-                    ? Colors.green
-                    : Colors.grey,
+                color: isOnline == "online" && signedIn == 1 ? Colors.green : Colors.grey,
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: Colors.black,
@@ -1059,9 +1022,7 @@ class _ChatScreenState extends State<ChatScreen> {
       child: Align(
         alignment: Alignment.topCenter,
         child: Text(
-          Preferences.isHungarian
-              ? "Ez a beszélgetés még üres."
-              : "The chat is empty.",
+          Preferences.isHungarian ? "Ez a beszélgetés még üres." : "The chat is empty.",
           style: const TextStyle(
             color: Colors.white60,
             fontSize: 20,
@@ -1088,8 +1049,7 @@ class _ChatScreenState extends State<ChatScreen> {
         switch (messageType) {
           case 'file': //itt is egy case alapján jelenítjük meg az üzeneteket
             final fileNames = List<String>.from(message['fileNames'] ?? []);
-            final downloadUrls =
-                List<String>.from(message['downloadUrls'] ?? []);
+            final downloadUrls = List<String>.from(message['downloadUrls'] ?? []);
 
             return GestureDetector(
               onLongPress: () {
@@ -1159,12 +1119,8 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   Widget _buildScrollToBottomButton() {
-    final bottomInset = MediaQuery.of(context)
-        .viewInsets
-        .bottom; //a képernyő aljától lévő távolság
-    final previewBarHeight = _attachments.isNotEmpty
-        ? 80.0
-        : 0.0; //80-as méretű a previewBar-nak kihagyott távolság
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom; //a képernyő aljától lévő távolság
+    final previewBarHeight = _attachments.isNotEmpty ? 80.0 : 0.0; //80-as méretű a previewBar-nak kihagyott távolság
     final bottomPadding = bottomInset > 0 //ha eltávolodtunk a képernyő aljától
         ? bottomInset +
             previewBarHeight +
@@ -1176,9 +1132,7 @@ class _ChatScreenState extends State<ChatScreen> {
             padding: EdgeInsets.only(bottom: bottomPadding),
             child: FloatingActionButton(
               backgroundColor: Colors.grey[800],
-              tooltip: Preferences.isHungarian
-                  ? "Ugrás az aljára"
-                  : "Scroll to bottom",
+              tooltip: Preferences.isHungarian ? "Ugrás az aljára" : "Scroll to bottom",
               elevation: 10,
               mini: true,
               shape: const CircleBorder(),
@@ -1344,13 +1298,10 @@ class _ChatScreenState extends State<ChatScreen> {
                         style: const TextStyle(
                           color: Colors.white,
                         ),
-                        maxLines:
-                            null, //annyi sorba írhat ahányat akar max 5000 karakterig
+                        maxLines: null, //annyi sorba írhat ahányat akar max 5000 karakterig
                         minLines: 1,
                         decoration: InputDecoration(
-                          hintText: Preferences.isHungarian
-                              ? "Kezdj el írni..."
-                              : "Start writing...",
+                          hintText: Preferences.isHungarian ? "Kezdj el írni..." : "Start writing...",
                           hintStyle: TextStyle(
                             color: Colors.grey[400],
                           ),
@@ -1365,10 +1316,8 @@ class _ChatScreenState extends State<ChatScreen> {
                           "${_messageController.text.length}/$maxMessageLength", //karakter számláló
                           style: TextStyle(
                             fontSize: 12,
-                            color: _messageController.text.length >
-                                    maxMessageLength
-                                ? Colors.redAccent
-                                : Colors.grey[400],
+                            color:
+                                _messageController.text.length > maxMessageLength ? Colors.redAccent : Colors.grey[400],
                           ),
                         ),
                       ),
@@ -1384,8 +1333,7 @@ class _ChatScreenState extends State<ChatScreen> {
               onPressed: _showSendIcon
                   ? _handleSend
                   : () {
-                      _messageController.text =
-                          "👍"; //like emoji küldése gyors üzenetként
+                      _messageController.text = "👍"; //like emoji küldése gyors üzenetként
                       _handleSend();
                     },
             ),

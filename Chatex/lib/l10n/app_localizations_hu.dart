@@ -48,15 +48,14 @@ class AppLocalizationsHu extends AppLocalizations {
   String get createNewAccount => 'Új fiók létrehozása';
 
   @override
-  String get resetPassword => 'Jelszó helyreállítás';
+  String get resetPassword => 'Elfelejtett Jelszó';
 
   @override
-  String get resetPasswordButton =>
-      'A jelszó helyreállításához\\nadja meg az e-mail címét!';
+  String get resetPasswordButton => 'Jelszó helyreállítás';
 
   @override
   String get resetPasswordInformation =>
-      'To reset your password\nenter your email address!';
+      'A jelszó helyreállításához\nadja meg az e-mail címét!';
 
   @override
   String get registration => 'Regisztráció';
@@ -75,7 +74,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get passwordRequirements =>
-      'Min. 8 karakter, Max. 20 karakter,\\n1 kisbetű, 1 nagybetű, és 1 szám.';
+      'Min. 8 karakter, Max. 20 karakter,\n1 kisbetű, 1 nagybetű, és 1 szám.';
 
   @override
   String get passwordsDoesntMatch => 'A jelszavak nem egyeznek meg!';
@@ -94,7 +93,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorRegistration =>
-      'Kapcsolati hiba a\\nregisztráció közben!';
+      'Kapcsolati hiba a\nregisztráció közben!';
 
   @override
   String get successfulLogin => 'Sikeres bejelentkezés!';
@@ -106,12 +105,11 @@ class AppLocalizationsHu extends AppLocalizations {
   String get errorCode => 'Hiba kód:';
 
   @override
-  String get connectionErrorLogin =>
-      'Kapcsolati hiba a\\nbejelentkezés közben!';
+  String get connectionErrorLogin => 'Kapcsolati hiba a\nbejelentkezés közben!';
 
   @override
   String get connectionErrorLogout =>
-      'Kapcsolati hiba a\\nkijelentkezés közben!';
+      'Kapcsolati hiba a\nkijelentkezés közben!';
 
   @override
   String get resetPasswordEmailSent =>
@@ -122,7 +120,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorResetPassword =>
-      'Kapcsolati hiba a\\njelszó helyreállításánál!';
+      'Kapcsolati hiba a\njelszó helyreállításánál!';
 
   @override
   String connectionError(String action) {
@@ -131,12 +129,12 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String permissionAccess(String typeOfPermission) {
-    return 'A $typeOfPermission használatához\\nengedély szükséges!';
+    return 'A $typeOfPermission használatához\nengedély szükséges!';
   }
 
   @override
   String permissionDenied(String typeOfPermission) {
-    return 'A(z) $typeOfPermission engedély tiltva van!\\\nÁtírányítás a beállításokba...';
+    return 'A(z) $typeOfPermission engedély tiltva van!\nÁtírányítás a beállításokba...';
   }
 
   @override
@@ -176,11 +174,11 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorSettingRead =>
-      'Kapcsolati hiba\\naz olvasottság átállításánál!';
+      'Kapcsolati hiba\naz olvasottság átállításánál!';
 
   @override
   String get connectionErrorMessageDelete =>
-      'Kapcsolati hiba\\naz üzenet törlésénél!';
+      'Kapcsolati hiba\naz üzenet törlésénél!';
 
   @override
   String get justNow => 'Épp most';
@@ -246,8 +244,7 @@ class AppLocalizationsHu extends AppLocalizations {
   String get connectionErrorGetChats => 'Kapcsolati hiba a chatek lekérésénél!';
 
   @override
-  String get noChats =>
-      'Még nincs egyetlen csevegésed sem.\\\nKezdj el egyet a ';
+  String get noChats => 'Még nincs egyetlen csevegésed sem.\nKezdj el egyet a ';
 
   @override
   String get iconPress => ' ikonra kattintva!';
@@ -269,7 +266,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorGettingFriendList =>
-      'Kapcsolati hiba a\\nbarátlista lekérésénél!';
+      'Kapcsolati hiba a\nbarátlista lekérésénél!';
 
   @override
   String get connectionErrorGettingFriends =>
@@ -280,7 +277,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorStartingChat =>
-      'Kapcsolati hiba a\\nchat kezdeményezésénél!';
+      'Kapcsolati hiba a\nchat kezdeményezésénél!';
 
   @override
   String get startChat => 'Chat kezdése';
@@ -299,7 +296,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorDeletingChat =>
-      'Kapcsolati hiba a\\nchat törlése közben!';
+      'Kapcsolati hiba a\nchat törlése közben!';
 
   @override
   String get chatInformation => 'Chat információi';
@@ -334,22 +331,22 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get userNoGroupsFirstHalf =>
-      'Még nem vagy tagja egyetlen csoportnak sem.\\nCsinálj egyet a ';
+      'Még nem vagy tagja egyetlen csoportnak sem.\nCsinálj egyet a ';
 
   @override
   String get usersName => 'a felhasználók nevei';
 
   @override
   String get connectionErrorFriendRequestsNumber =>
-      'Kapcsolati hiba a\\nbarátkérések számának lekérésékor!';
+      'Kapcsolati hiba a\nbarátkérések számának lekérésékor!';
 
   @override
   String get connectionErrorGettingUsers =>
-      'Kapcsolati hiba a\\nfelhasználók lekérésekor!';
+      'Kapcsolati hiba a\nfelhasználók lekérésekor!';
 
   @override
   String get connectionErrorFriendRequestStatus =>
-      'Kapcsolati hiba a\\nbarátjelölés állapotának lekérésénél!';
+      'Kapcsolati hiba a\nbarátjelölés állapotának lekérésénél!';
 
   @override
   String get friendRequestSent => 'Barátjelölés elküldve!';
@@ -402,7 +399,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorChangingStatus =>
-      'Kapcsolati hiba a\\nstátusz változtatásánál!';
+      'Kapcsolati hiba a\nstátusz változtatásánál!';
 
   @override
   String get logout => 'Kijelentkezés';
@@ -424,7 +421,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorFriendRequests =>
-      'Kapcsolati hiba a\\nbarátkérések lekérésékor!';
+      'Kapcsolati hiba a\nbarátkérések lekérésékor!';
 
   @override
   String get friendRequestAccepted => 'Barátkérés sikeresen elfogadva!';
@@ -434,7 +431,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorAcceptingFriendRequests =>
-      'Kapcsolati hiba a\\njelölés elfogadásakor!';
+      'Kapcsolati hiba a\njelölés elfogadásakor!';
 
   @override
   String get friendRequestDeclined => 'Barátkérés elutasítva!';
@@ -444,7 +441,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorDecliningFriendRequests =>
-      'Kapcsolati hiba a\\njelölés elutasításakor!';
+      'Kapcsolati hiba a\njelölés elutasításakor!';
 
   @override
   String get noNewFriendRequest => 'Nincsenek új jelölések';
@@ -463,7 +460,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorDeletingFriend =>
-      'Kapcsolati hiba a\\n barát törlése közben!';
+      'Kapcsolati hiba a\n barát törlése közben!';
 
   @override
   String get currentlyNoFriends => 'Jelenleg nincsenek barátaid!';
@@ -493,21 +490,21 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorUpdatingUsername =>
-      'Kapcsolati hiba a\\nfelhasználónév módosítása közben!';
+      'Kapcsolati hiba a\nfelhasználónév módosítása közben!';
 
   @override
   String get errorUpdatingEmail => 'Hiba történt az email frissítésekor!';
 
   @override
   String get connectionErrorUpdatingEmail =>
-      'Kapcsolati hiba az\\nemail frissítése közben!';
+      'Kapcsolati hiba az\nemail frissítése közben!';
 
   @override
   String get errorUpdatingPassword => 'Hiba a jelszó frissítése közben!';
 
   @override
   String get connectionErrorUpdatingPassword =>
-      'Kapcsolati hiba a\\njelszó frissítése közben!';
+      'Kapcsolati hiba a\njelszó frissítése közben!';
 
   @override
   String get unsupportedFileFormat => 'Nem támogatott fájlformátum!';
@@ -524,7 +521,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorUpdatingProfilePicture =>
-      'Kapcsolati hiba a\\nprofilkép frissítése közben!';
+      'Kapcsolati hiba a\nprofilkép frissítése közben!';
 
   @override
   String get changesSaved => 'Módosítások elmentve!';
@@ -540,16 +537,16 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get connectionErrorDeletingAccount =>
-      'Kapcsolati hiba a\\nfiók törlése közben!';
+      'Kapcsolati hiba a\nfiók törlése közben!';
 
   @override
   String get accountDetails => 'Fiók adatai';
 
   @override
-  String get usernameCannotBeEmpty => 'A felhasználónév\\nnem lehet üres!';
+  String get usernameCannotBeEmpty => 'A felhasználónév\nnem lehet üres!';
 
   @override
-  String get emailCannotBeEmpty => 'Az email cím\\nnem lehet üres!';
+  String get emailCannotBeEmpty => 'Az email cím\nnem lehet üres!';
 
   @override
   String get changePassword => 'Jelszó módosítása';
@@ -618,7 +615,7 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String savedTo(String fileName, String path) {
-    return '$fileName elmentve ide:\\n$path';
+    return '$fileName elmentve ide:\n$path';
   }
 
   @override

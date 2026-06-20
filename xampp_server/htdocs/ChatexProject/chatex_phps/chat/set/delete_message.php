@@ -1,16 +1,14 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . '/../../db.php'; //kapcsolat
+require_once __DIR__ . '/../../bootstrap.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
 $messageId = intval($data['message_id']);
 
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
 $stmt = $conn->prepare("DELETE FROM messages WHERE message_id = ?");
 $stmt->bind_param("i", $messageId);
 $stmt->execute();

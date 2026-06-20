@@ -1,12 +1,6 @@
 <?php
-//header-ök a REST API szerű működéshez!
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-require_once __DIR__ . '/../db.php'; //Adatbázis kapcsolat létesítése
-require_once __DIR__ . '/../vendor/autoload.php'; //Composer csomag használata
+require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Firebase\JWT\JWT; //Firebase által fejlesztett felhasználói token generálás
 
@@ -14,6 +8,10 @@ $userData = json_decode(file_get_contents("php://input"), true);
 
 $email = trim($userData['email']);
 $password = trim($userData['password']);
+
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
 
 $stmt = $conn->prepare("SELECT id, preferred_lang, profile_picture, username, email, password_hash, status, signed_in FROM users WHERE email = ?");
 $stmt->bind_param("s", $email);

@@ -1,77 +1,79 @@
 <?php
-//a tényleges jelszó helyreállító HTML ami az átírányítás után kell hogy megjelenjen (viszonylag középre igazítva!)
-
-require_once __DIR__ . "/../db.php";
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    //post kérés esetében (amikor submit-oljuk a Formot) alkalmazzuk a REST API header-eket
-    header("Content-Type: application/json");
-    header("Access-Control-Allow-Origin: *");
-    header("Access-Control-Allow-Methods: POST");
-    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+    require_once __DIR__ . '/../bootstrap.php';
+    /** @var mysqli $conn */
 
-    //az átírányításkor átvett tokent elmentjük
     $token = $_POST["token"] ?? '';
-
-    //az új jelszót pedig a Form submitolásakor tároljuk el
     $newPassword = $_POST["new_password"] ?? '';
 
     if (!$token || !$newPassword) {
-        echo json_encode(["success" => false, "message" => "Érvénytelen kérés."]);
-        exit;
+        send_json_response(["success" => false, "message" => "Hiányzó token vagy jelszó."], 400);
     }
 
-    //lekérjük a token alapján melyik felhasználóról van szó!
-    $stmt = $conn->prepare("SELECT id, email FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
+    $stmt = null;
+    try {
+        $stmt = $conn->prepare("SELECT id FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        $result = $stmt->get_result();
+
+        if ($result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            $userId = $row["id"];
+            $stmt->close(); // Close the select statement before creating a new one
+
+            // Hash the new password and update the user, nullifying the reset token
+            $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
+            $stmt = $conn->prepare("UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?");
+            $stmt->bind_param("si", $hashedPassword, $userId);
+
+            if ($stmt->execute()) {
+                send_json_response(["success" => true, "message" => "Jelszó sikeresen frissítve!"]);
+            } else {
+                send_json_response(["success" => false, "message" => "Adatbázis hiba a jelszó frissítésekor."], 500);
+            }
+        } else {
+            // Invalid or expired token
+            send_json_response(["success" => false, "message" => "A jelszó-visszaállító kérelem érvénytelen vagy lejárt."], 404);
+        }
+    } finally {
+        // This block will always run, ensuring resources are closed.
+        if (isset($stmt) && $stmt !== false) {
+            $stmt->close();
+        }
+        $conn->close();
+    }
+}
+
+// GET request: Display the HTML form.
+// We connect to the DB directly to avoid the JSON headers from bootstrap.php
+require_once __DIR__ . "/../db.php";
+
+$token = $_GET["token"] ?? '';
+if (!$token) {
+    http_response_code(400);
+    die("Érvénytelen vagy hiányzó token.");
+}
+
+$userEmail = "";
+try {
+    // Check if the token is valid and get the user's email to display
+    /**
+     * @var mysqli $conn The database connection object, created in bootstrap.php
+     */
+    $stmt = $conn->prepare("SELECT email FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
     $stmt->bind_param("s", $token);
     $stmt->execute();
     $result = $stmt->get_result();
 
     if ($result->num_rows > 0) {
         $row = $result->fetch_assoc();
-
-        $userId = $row["id"];
         $userEmail = $row["email"];
-
-        //hasheljük a felhasználó új jelszavát (biztonságos eltárolás!) és le NULL-oljuk a helyreállítási mezőket!
-        $hashedPassword = password_hash($newPassword, PASSWORD_BCRYPT);
-        $stmt = $conn->prepare("UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?");
-        $stmt->bind_param("si", $hashedPassword, $userId);
-        $stmt->execute();
-
-        echo json_encode(["success" => true, "message" => "Jelszó sikeresen frissítve!"]);
     } else {
-        //Érvénytelen vagy lejárt token (ha túl lépte a 15 percet)
-        echo json_encode(["success" => false, "message" => "A jelszó helyreállító email lejárt!"]);
-    }
-
-    $stmt->close();
-    $conn->close();
-    exit;
-}
-
-//Ha nem POST kérés (form által küldött adat), hanem GET (az oldal megjelenik) akkor:
-
-$token = $_GET["token"] ?? '';
-if (!$token) {
-    die("Érvénytelen token.");
-}
-
-//lekérjük az email címet a token alapján (hogy megjelenítsük a felhasználónak)
-$stmt = $conn->prepare("SELECT email FROM users WHERE password_reset_token = ? AND password_reset_expires > NOW()");
-$stmt->bind_param("s", $token);
-$stmt->execute();
-$result = $stmt->get_result();
-
-$userEmail = "";
-
-if ($result->num_rows > 0) {
-    $row = $result->fetch_assoc();
-    //eltároljuk az emailt ami meg fog jelenni a helyreállító html-n!
-    $userEmail = $row["email"];
-} else {
-    //ha nem volt olyan email ahol megegyezett a token akkor érvénytelen html-t jelenítünk meg:
-    die('<!DOCTYPE html>
+        // If the token is not found or expired, show an error page and stop.
+        http_response_code(404);
+        die('<!DOCTYPE html>
         <html lang="hu">
         <head>
         <meta charset="UTF-8">
@@ -109,9 +111,15 @@ if ($result->num_rows > 0) {
         </div>
         </body>
         </html>');
+    }
+} finally {
+    // Always close the connection for the GET request
+    if (isset($stmt) && $stmt !== false) {
+        $stmt->close();
+    }
+    $conn->close();
 }
 
-//különben pedig (ha érvényes):
 echo '<!DOCTYPE html>
 <html lang="hu">
 
@@ -139,7 +147,7 @@ echo '<!DOCTYPE html>
             background: white;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             text-align: center;
             width: 90%;
             max-width: 400px;
@@ -209,7 +217,7 @@ echo '<!DOCTYPE html>
 </head>
 
 <body>
-    <div class="container">
+    <div class="container" data-token="' . htmlspecialchars($token) . '">
         <h2>Új jelszó megadása</h2>
         <p><b>' . htmlspecialchars($userEmail) . '</b> címre</p>
         <form action="" method="POST">
@@ -291,7 +299,9 @@ echo '<!DOCTYPE html>
 
             const password = document.getElementById("password").value;
             const confirmPassword = document.getElementById("confirmPassword").value;
-            const token = ' . json_encode($token) . ';
+            // Read the token from the data attribute for better separation of concerns
+            const container = document.querySelector(".container");
+            const token = container.dataset.token;
 
             if (password !== confirmPassword) {
                 alert("A jelszavak nem egyeznek!");
@@ -325,7 +335,3 @@ echo '<!DOCTYPE html>
 </body>
 
 </html>';
-
-//majd végezetül lezárjuk a kapcsolatot!
-$stmt->close();
-$conn->close();

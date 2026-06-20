@@ -5,29 +5,25 @@ import 'package:chatex/logic/auth.dart';
 import 'package:chatex/l10n/app_localizations.dart';
 import 'package:chatex/constants/validation_constants.dart';
 
-//ForgotPasswordPage OSZTÁLY ELEJE ----------------------------------------------------------------
-class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({super.key, required this.language});
+//ForgotPasswordScreen OSZTÁLY ELEJE ----------------------------------------------------------------
+class ForgotPasswordScreen extends StatefulWidget {
+  const ForgotPasswordScreen({super.key, required this.language});
 
-  //konstruktorba átadjuk hogy bejelentkezés előtt, módosított nyelvnél megfelelően jelenjenek meg a szövegek!
   final String language;
 
   @override
-  State<ForgotPasswordPage> createState() => _ForgotPasswordPageState();
+  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
+class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
 
-  //szokásos tartalom és fókusz kezelés
   final TextEditingController _emailController = TextEditingController();
   final FocusNode _emailFocusNode = FocusNode();
   bool _isEmailFocused = false;
 
-  //a helyreállító email küldésekor a várakozást true-ra állítjuk, amíg nem végez
-  bool _isLoading = false;
+  bool _isLoadingByResetEmail = false;
 
-  //main.dart-hoz hasonlóan kezeljük a validálást
   final _formKey = GlobalKey<FormBuilderState>();
   bool _isPasswordResetButtonDisabled = true;
 
@@ -53,7 +49,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   void _checkPasswordResetFieldValidation() {
-    //main.dart logikája szerint lett elkészítve, 1 mezővel
     final currentState = _formKey.currentState;
     if (currentState == null) return;
 
@@ -118,7 +113,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             ],
           ),
         ),
-        if (_isLoading) _buildLoadingCircle(),
+        if (_isLoadingByResetEmail) _buildLoadingCircle(),
       ],
     );
   }
@@ -148,9 +143,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
-              regex: RegExp(
-                  emailValidationRegex,
-                  unicode: true),
+              regex: RegExp(emailValidationRegex, unicode: true),
               errorText: l10n.emailIsInvalid,
               checkNullOrEmpty: false),
         ]),
@@ -162,23 +155,16 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           fontSize: 20.0,
         ),
         decoration: InputDecoration(
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
-          suffixIcon: _emailController.text.isNotEmpty
-              ? _buildDeleteContentIcon()
-              : null,
-          hintText: _isEmailFocused
-              ? null
-              : l10n.emailAddress,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+          suffixIcon: _emailController.text.isNotEmpty ? _buildDeleteContentIcon() : null,
+          hintText: _isEmailFocused ? null : l10n.emailAddress,
           hintStyle: TextStyle(
             color: Colors.grey[600],
             fontStyle: FontStyle.italic,
             fontWeight: FontWeight.bold,
             fontSize: 20.0,
           ),
-          labelText: _isEmailFocused
-              ? l10n.emailAddress
-              : null,
+          labelText: _isEmailFocused ? l10n.emailAddress : null,
           labelStyle: const TextStyle(
             color: Colors.white,
             fontSize: 20.0,
@@ -223,8 +209,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             //teljes szélességet érjen el
             flex: 1,
             child: Padding(
-              padding:
-                  const EdgeInsets.only(left: 10.0, top: 20.0, right: 10.0),
+              padding: const EdgeInsets.only(left: 10.0, top: 20.0, right: 10.0),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.deepPurpleAccent,
@@ -233,13 +218,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   disabledForegroundColor: Colors.white,
                   elevation: 5,
                 ),
-                onPressed: _isPasswordResetButtonDisabled || _isLoading
+                onPressed: _isPasswordResetButtonDisabled || _isLoadingByResetEmail
                     //egyik sem true alapértelmezetten
                     ? null
                     : () async {
                         if (_formKey.currentState!.saveAndValidate()) {
                           setState(() {
-                            _isLoading = true;
+                            _isLoadingByResetEmail = true;
                           });
 
                           try {
@@ -249,18 +234,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               language: widget.language,
                             );
                           } finally {
-                            //a finally ág a műveletek végén fut le (amikor már nincs await)
                             setState(() {
-                              _isLoading = false;
+                              _isLoadingByResetEmail = false;
                             });
                           }
                         }
                       },
                 child: Text(
-                l10n.resetPasswordButton,
+                  l10n.resetPasswordButton,
                   style: TextStyle(
                     fontSize: 20 * MediaQuery.of(context).textScaler.scale(1.0),
-                    //minden eszközön elvileg ugyanakkora lesz (px helyett dp)
+                    //TODO: minden eszközön elvileg ugyanakkora lesz (px helyett dp)
                     height: 3.0,
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1,
@@ -283,6 +267,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     );
   }
 
+  //TODO: main.dart szerint megcsinálni és kiemelni
   Widget _chatexWidget() {
     final l10n = AppLocalizations.of(context)!;
     return Expanded(
@@ -314,4 +299,4 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 //DIZÁJN ELEMEK VÉGE ------------------------------------------------------------------------------
 }
 
-//ForgotPasswordPage OSZTÁLY VÉGE -----------------------------------------------------------------
+//ForgotPasswordScreen OSZTÁLY VÉGE -----------------------------------------------------------------

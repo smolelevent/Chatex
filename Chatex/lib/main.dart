@@ -408,8 +408,10 @@ class _LoginUIState extends State<LoginUI> {
         name: "password",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordIsTooShort, checkNullOrEmpty: false),
-          FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordIsTooLong, checkNullOrEmpty: false),
+          FormBuilderValidators.minLength(passwordMinLength,
+              errorText: l10n.passwordIsTooShort, checkNullOrEmpty: false),
+          FormBuilderValidators.maxLength(passwordMaxLength,
+              errorText: l10n.passwordIsTooLong, checkNullOrEmpty: false),
           FormBuilderValidators.hasUppercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Lu}', unicode: true),
@@ -518,12 +520,8 @@ class _LoginUIState extends State<LoginUI> {
     if (_formKey.currentState!.saveAndValidate()) {
       final localeProvider = Provider.of<LocaleProvider>(context, listen: false);
       final language = localeToLanguage[localeProvider.locale?.languageCode] ?? 'Magyar';
-      await AuthService().logIn(
-          email: _emailController,
-          password: _passwordController,
-          context: context,
-          language: language
-          );
+      await AuthService()
+          .logIn(email: _emailController, password: _passwordController, context: context, language: language);
     }
   }
 
@@ -572,7 +570,7 @@ class _LoginUIState extends State<LoginUI> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => ForgotPasswordPage(
+            builder: (context) => ForgotPasswordScreen(
               language: language,
             ),
           ),
@@ -646,16 +644,17 @@ class _LoginUIState extends State<LoginUI> {
       ),
     );
   }
-
+//TODO: app stringek nem egységesek angol és a magyar
   Widget _buildChatexWidget() {
-    return const Padding(
-      padding: EdgeInsets.only(bottom: 10),
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            "Chatex",
-            style: TextStyle(
+            l10n.chatex,
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20.0,
               fontWeight: FontWeight.w500,
@@ -669,4 +668,5 @@ class _LoginUIState extends State<LoginUI> {
 
 //DIZÁJN ELEMEK VÉGE ------------------------------------------------------------------------------
 }
+
 //LoginUI OSZTÁLY VÉGE ----------------------------------------------------------------------------

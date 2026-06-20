@@ -1,11 +1,6 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . '/../../db.php'; //kapcsolat
+require_once __DIR__ . '/../../bootstrap.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -13,6 +8,10 @@ $chatId = intval($data["chat_id"]);
 $userId = intval($data["user_id"]);
 
 //csak olyan üzeneteket frissítsünk amiket még nem "láttamoztak le"
+
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
 $stmt = $conn->prepare("
     UPDATE messages
     SET is_read = 1

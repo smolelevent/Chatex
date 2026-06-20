@@ -1,18 +1,16 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . '/../../db.php'; //adatbázis kapcsolat
+require_once __DIR__ . '/../../bootstrap.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
 $chatId = intval($data['chat_id']);
 
 //minden üzenetet lekérünk ami a chat_id-hez tartozik, csökkenő sorrendben! (last message miatt)
-$query = $conn->prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY sent_at ASC");
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
+$query = $conn->prepare("SELECT * FROM messages WHERE chat_id = ? ORDER BY sent_at");
 $query->bind_param("i", $chatId);
 $query->execute();
 $result = $query->get_result();

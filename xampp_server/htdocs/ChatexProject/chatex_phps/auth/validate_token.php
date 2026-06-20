@@ -1,12 +1,7 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-require_once __DIR__ . '/../vendor/autoload.php'; //Composer csomag
-require_once __DIR__ . '/../db.php'; //Adatbázis kapcsolat
+require_once __DIR__ . '/../bootstrap.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Firebase\JWT\JWT; //token kezelő
 use Firebase\JWT\Key; //kulcs kezelő (mivel dekódolni kell, ha visszalép a felhasználó)
@@ -37,5 +32,8 @@ try {
     echo json_encode(["success" => false, "message" => "Érvénytelen token: " . $e->getMessage()]);
 }
 
-//$stmt->close(); <- ez okozta a Kapcsolati hibát a token validálásakor mivel nincs ilyen változó a fájlban!
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
+
 $conn->close();

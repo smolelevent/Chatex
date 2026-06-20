@@ -1,11 +1,9 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
+require_once __DIR__ . '/../../bootstrap.php';
 
-require_once __DIR__ . "/../../db.php"; //kapcsolat
 
 $data = json_decode(file_get_contents("php://input"), true);
 

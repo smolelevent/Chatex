@@ -1,11 +1,5 @@
 <?php
-//REST API
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-
-require_once __DIR__ . '/../../db.php'; //adatbázis kapcsolat
+require_once __DIR__ . '/../../bootstrap.php';
 
 $data = json_decode(file_get_contents("php://input"), true);
 
@@ -13,6 +7,9 @@ $chatId = intval($data['chat_id']);
 $userId = intval($data['user_id']);
 
 //megszámoljuk az összes olyan chatet amihez a felhasználónak köze van!
+/**
+ * @var mysqli $conn The database connection object, created in bootstrap.php
+ */
 $stmt = $conn->prepare("SELECT COUNT(*) as cnt FROM chat_members WHERE chat_id = ? AND user_id = ?");
 $stmt->bind_param("ii", $chatId, $userId);
 $stmt->execute();
