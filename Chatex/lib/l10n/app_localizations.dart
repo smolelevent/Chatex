@@ -227,7 +227,7 @@ abstract class AppLocalizations {
   /// No description provided for @passwordsDoesntMatch.
   ///
   /// In en, this message translates to:
-  /// **'The passwords do not match!'**
+  /// **'The passwords doesn\'t match!'**
   String get passwordsDoesntMatch;
 
   /// No description provided for @passwordAgain.

@@ -15,11 +15,12 @@ class Settings extends StatefulWidget {
 class _SettingsState extends State<Settings> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
 
-  final TextEditingController _searchController =
-      TextEditingController(); //szöveg kezelésére szolgál
-  final FocusNode _searchFocusNode =
-      FocusNode(); //fókuszra történő dizájn változtatás
+  final TextEditingController _searchController = TextEditingController(); //szöveg kezelésére szolgál
+
+  final FocusNode _searchFocusNode = FocusNode(); //fókuszra történő dizájn változtatás
+
   bool _isSearchFocused = false; //itt mentjük el a FocusNode-ot
+
   String _searchQuery = ""; //keresés
 
 //OSZTÁLYON BELÜLI VÁLTOZÓK VÉGE ------------------------------------------------------------------
@@ -73,8 +74,7 @@ class _SettingsState extends State<Settings> {
           SettingItem(
             icon: Icons.person_rounded,
             color: Colors.blue,
-            title:
-                Preferences.isHungarian ? "Fiók kezelése" : "Account managment",
+            title: Preferences.isHungarian ? "Fiók kezelése" : "Account managment",
             subtitle: "",
             onTap: () {
               Navigator.push(
@@ -196,8 +196,7 @@ class _SettingsState extends State<Settings> {
   }
 
   Widget _buildSearchFilteredBody() {
-    final List<SettingCategory> settings =
-        getSettings(); //eltároltuk egy List-be az összes beállítást
+    final List<SettingCategory> settings = getSettings(); //eltároltuk egy List-be az összes beállítást
 
     final filteredSettings = settings
         //a kereséshez szükséges szűrés, itt kategóriákként kezeli még
@@ -206,8 +205,7 @@ class _SettingsState extends State<Settings> {
           final filteredItems = category.items
               .where(
                 (item) => item.title.toLowerCase().startsWith(
-                      _searchQuery
-                          .toLowerCase(), //maga a beállítás szövege megegyezik a keresett szöveggel
+                      _searchQuery.toLowerCase(), //maga a beállítás szövege megegyezik a keresett szöveggel
                     ),
               )
               .toList(); //és listába adjuk vissza
@@ -227,9 +225,7 @@ class _SettingsState extends State<Settings> {
           child: filteredSettings.isEmpty
               ? Center(
                   child: Text(
-                    Preferences.isHungarian
-                        ? "Nincs találat"
-                        : "No results found",
+                    Preferences.isHungarian ? "Nincs találat" : "No results found",
                     style: const TextStyle(
                       color: Colors.white70,
                       fontSize: 18,
@@ -277,8 +273,7 @@ class _SettingsState extends State<Settings> {
     );
   }
 
-  Widget _buildSettingCard(IconData icon, Color iconColor, String title,
-      String subtitle, VoidCallback onTap) {
+  Widget _buildSettingCard(IconData icon, Color iconColor, String title, String subtitle, VoidCallback onTap) {
     //ez a metódus építi fel maga a beállítás kártyát a megadott adatok alapján
     return Card(
       margin: const EdgeInsets.only(bottom: 20),

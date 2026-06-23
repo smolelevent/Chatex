@@ -90,10 +90,10 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     //mik történjenek a chat_screen.dart indításakor
     super.initState();
-    _cacheAllPermanentImages();
-    _connectToWebSocket();
-    _loadMessages();
-    _markMessagesAsRead();
+    //_cacheAllPermanentImages();
+    // _connectToWebSocket();
+    // _loadMessages();
+    //_markMessagesAsRead();
 
     _currentStatus = widget.isOnline;
     _currentLastSeen = widget.lastSeen;
@@ -144,194 +144,194 @@ class _ChatScreenState extends State<ChatScreen> {
 
 //ÜZENET KÜLDŐ/KEZELŐ METÓDUSOK ELEJE -------------------------------------------------------------
 
-  void _connectToWebSocket() {
-    _channel = WebSocketChannel.connect(
-      Uri.parse(webSocketUrl), //csatlakozunk a websocket szerverhez hogy valós időben frissüljenek az adatok
-    );
+  // void _connectToWebSocket() {
+  //   _channel = WebSocketChannel.connect(
+  //     Uri.parse(webSocketUrl), //csatlakozunk a websocket szerverhez hogy valós időben frissüljenek az adatok
+  //   );
+  //
+  //   //Auth típusú üzenet frissíti a is_online és a last_seen mezőt ezért az Appbar-ban lévő adatok frissülnek
+  //   _channel.sink.add(jsonEncode({
+  //     "message_type": "auth",
+  //     "user_id": Preferences.getUserId(),
+  //   }));
+  //
+  //   log("A chat_screen.dart-ról sikeres volt a websocket csatlakozás!");
+  //
+  //   _channel.stream.listen((message) {
+  //     //figyelünk minden üzenetet (üzenet = bármilyen adat) ami a websocket szerverre érkezik
+  //     final decoded = jsonDecode(message);
+  //     final type = decoded['message_type'] ?? 'text';
+  //     final data = decoded['data'] ?? decoded;
+  //
+  //     if (data['chat_id'] != widget.chatId) return; //ha rossz a chat id alapján
+  //
+  //     final messageId = data['message_id'];
+  //     final index = _messages.indexWhere((msg) => msg['message_id'] == messageId); //van e egyező üzenet id
+  //
+  //     if (index != -1) return;
+  //
+  //     final isForMe = data['receiver_id'] == Preferences.getUserId(); //ha az üzenet a jelenlegi felhasználónak szól
+  //     if (isForMe && ModalRoute.of(context)?.isCurrent == true) {
+  //       //és a chat_screen.dart a jelenlegi képernyő
+  //       Future.delayed(
+  //         const Duration(milliseconds: 500),
+  //         () {
+  //           _channel.sink.add(jsonEncode({
+  //             "message_type": "read_status_update", //akkor olvasva legyenek az üzenetek
+  //             "chat_id": widget.chatId,
+  //             "user_id": Preferences.getUserId(),
+  //           }));
+  //         },
+  //       );
+  //     }
+  //
+  //     switch (type) {
+  //       //ha az ÉRKEZETT üzenet típusa a websocket szerverről
+  //       case 'text':
+  //         setState(() {
+  //           _messages.add(data);
+  //         });
+  //         scrollToBottom();
+  //         break;
+  //
+  //       case 'file':
+  //         final attachments = data['attachments'] ?? [];
+  //         final fileNames = <String>[];
+  //         final downloadUrls = <String>[];
+  //
+  //         for (final att in attachments) {
+  //           fileNames.add(att['file_name']);
+  //           downloadUrls.add(att['download_url']);
+  //         }
+  //
+  //         setState(() {
+  //           _messages.add({
+  //             ...data,
+  //             'message_type': 'file',
+  //             'fileNames': fileNames,
+  //             'downloadUrls': downloadUrls,
+  //             'message_text': data['message_text'],
+  //           });
+  //         });
+  //
+  //         scrollToBottom();
+  //         break;
+  //
+  //       case 'image':
+  //         final attachments = data['attachments'] ?? [];
+  //
+  //         if (attachments.isNotEmpty) {
+  //           final imageUrls = attachments.map<String>((att) => att['download_url'].toString()).toList();
+  //           final fileNames = attachments.map<String>((att) => att['file_name'].toString()).toList();
+  //
+  //           setState(() {
+  //             _messages.add({
+  //               ...data,
+  //               'message_type': 'image',
+  //               'downloadUrls': imageUrls,
+  //               'fileNames': fileNames,
+  //               'message_text': data['message_text'],
+  //             });
+  //           });
+  //         }
+  //
+  //         scrollToBottom();
+  //         break;
+  //
+  //       case 'message_read': //read-eli az üzeneteket amit látott a felhasználó
+  //         if (index != -1) {
+  //           setState(() {
+  //             _messages[index] = data;
+  //           });
+  //         }
+  //         break;
+  //
+  //       case 'status_update': //beállítja az appbar-on lévő adatokat
+  //         final int updatedUserId = data['user_id'];
+  //         if (updatedUserId == widget.receiverId) {
+  //           setState(() {
+  //             _currentStatus = data['status'];
+  //             _currentLastSeen = data['last_seen'];
+  //             _currentSignedIn = data['signed_in'];
+  //           });
+  //         }
+  //         break;
+  //
+  //       default:
+  //         log("Ismeretlen websocket típus: $type");
+  //     }
+  //   });
+  //
+  //   _keepAliveTimer?.cancel(); // ha már van 25s-os timer akkor töröljük
+  //   _keepAliveTimer = Timer.periodic(
+  //     const Duration(seconds: 25),
+  //     (_) {
+  //       _channel.sink.add(jsonEncode({"message_type": "ping"}));
+  //       log("Keep-alive ping elküldve!"); //azért szükséges hogy ne vesszen el a kapcsolat magától!
+  //     },
+  //   );
+  // }
 
-    //Auth típusú üzenet frissíti a is_online és a last_seen mezőt ezért az Appbar-ban lévő adatok frissülnek
-    _channel.sink.add(jsonEncode({
-      "message_type": "auth",
-      "user_id": Preferences.getUserId(),
-    }));
-
-    log("A chat_screen.dart-ról sikeres volt a websocket csatlakozás!");
-
-    _channel.stream.listen((message) {
-      //figyelünk minden üzenetet (üzenet = bármilyen adat) ami a websocket szerverre érkezik
-      final decoded = jsonDecode(message);
-      final type = decoded['message_type'] ?? 'text';
-      final data = decoded['data'] ?? decoded;
-
-      if (data['chat_id'] != widget.chatId) return; //ha rossz a chat id alapján
-
-      final messageId = data['message_id'];
-      final index = _messages.indexWhere((msg) => msg['message_id'] == messageId); //van e egyező üzenet id
-
-      if (index != -1) return;
-
-      final isForMe = data['receiver_id'] == Preferences.getUserId(); //ha az üzenet a jelenlegi felhasználónak szól
-      if (isForMe && ModalRoute.of(context)?.isCurrent == true) {
-        //és a chat_screen.dart a jelenlegi képernyő
-        Future.delayed(
-          const Duration(milliseconds: 500),
-          () {
-            _channel.sink.add(jsonEncode({
-              "message_type": "read_status_update", //akkor olvasva legyenek az üzenetek
-              "chat_id": widget.chatId,
-              "user_id": Preferences.getUserId(),
-            }));
-          },
-        );
-      }
-
-      switch (type) {
-        //ha az ÉRKEZETT üzenet típusa a websocket szerverről
-        case 'text':
-          setState(() {
-            _messages.add(data);
-          });
-          scrollToBottom();
-          break;
-
-        case 'file':
-          final attachments = data['attachments'] ?? [];
-          final fileNames = <String>[];
-          final downloadUrls = <String>[];
-
-          for (final att in attachments) {
-            fileNames.add(att['file_name']);
-            downloadUrls.add(att['download_url']);
-          }
-
-          setState(() {
-            _messages.add({
-              ...data,
-              'message_type': 'file',
-              'fileNames': fileNames,
-              'downloadUrls': downloadUrls,
-              'message_text': data['message_text'],
-            });
-          });
-
-          scrollToBottom();
-          break;
-
-        case 'image':
-          final attachments = data['attachments'] ?? [];
-
-          if (attachments.isNotEmpty) {
-            final imageUrls = attachments.map<String>((att) => att['download_url'].toString()).toList();
-            final fileNames = attachments.map<String>((att) => att['file_name'].toString()).toList();
-
-            setState(() {
-              _messages.add({
-                ...data,
-                'message_type': 'image',
-                'downloadUrls': imageUrls,
-                'fileNames': fileNames,
-                'message_text': data['message_text'],
-              });
-            });
-          }
-
-          scrollToBottom();
-          break;
-
-        case 'message_read': //read-eli az üzeneteket amit látott a felhasználó
-          if (index != -1) {
-            setState(() {
-              _messages[index] = data;
-            });
-          }
-          break;
-
-        case 'status_update': //beállítja az appbar-on lévő adatokat
-          final int updatedUserId = data['user_id'];
-          if (updatedUserId == widget.receiverId) {
-            setState(() {
-              _currentStatus = data['status'];
-              _currentLastSeen = data['last_seen'];
-              _currentSignedIn = data['signed_in'];
-            });
-          }
-          break;
-
-        default:
-          log("Ismeretlen websocket típus: $type");
-      }
-    });
-
-    _keepAliveTimer?.cancel(); // ha már van 25s-os timer akkor töröljük
-    _keepAliveTimer = Timer.periodic(
-      const Duration(seconds: 25),
-      (_) {
-        _channel.sink.add(jsonEncode({"message_type": "ping"}));
-        log("Keep-alive ping elküldve!"); //azért szükséges hogy ne vesszen el a kapcsolat magától!
-      },
-    );
-  }
-
-  Future<void> _loadMessages() async {
-    try {
-      final response = await http.post(
-        Uri.parse(getMessagesUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"chat_id": widget.chatId}),
-      );
-
-      if (response.statusCode == 200) {
-        final responseData = jsonDecode(response.body);
-        final List<Map<String, dynamic>> loadedMessages = [];
-
-        for (final message in responseData['messages']) {
-          final messageType = message['message_type'];
-          final attachments = message['attachments'] ?? [];
-          final fileNames = <String>[];
-          final downloadUrls = <String>[];
-
-          for (final att in attachments) {
-            fileNames.add(att['file_name']);
-            downloadUrls.add(att['download_url']);
-          }
-
-          if (messageType == 'file' || messageType == 'image') {
-            //ha csatolmány akkor speciális üzenetet adunk hozzá
-            loadedMessages.add({
-              ...message,
-              'message_type': messageType,
-              'fileNames': fileNames,
-              'downloadUrls': downloadUrls,
-              'message_text':
-                  (message['message_text']?.toString().trim().isEmpty ?? true) ? null : message['message_text'],
-            });
-          } else {
-            loadedMessages.add(message); //ha text típusú akkor csak hozzáadjuk
-          }
-        }
-
-        setState(() {
-          //majd véglegesen eltároljuk
-          _messages = loadedMessages;
-        });
-
-        scrollToBottom();
-      }
-    } catch (e) {
-      ToastMessages.showToastMessages(
-        Preferences.isHungarian
-            ? "Kapcsolati hiba az üzenetek betöltésénél!"
-            : "Connection error while getting messages!",
-        0.2,
-        Colors.redAccent,
-        Icons.error,
-        Colors.black,
-        const Duration(seconds: 2),
-        context,
-      );
-      log("Hiba történt az üzenetek lekérésekor: ${e.toString()}");
-    }
-  }
+  // Future<void> _loadMessages() async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(getMessagesUrl),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode({"chat_id": widget.chatId}),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       final responseData = jsonDecode(response.body);
+  //       final List<Map<String, dynamic>> loadedMessages = [];
+  //
+  //       for (final message in responseData['messages']) {
+  //         final messageType = message['message_type'];
+  //         final attachments = message['attachments'] ?? [];
+  //         final fileNames = <String>[];
+  //         final downloadUrls = <String>[];
+  //
+  //         for (final att in attachments) {
+  //           fileNames.add(att['file_name']);
+  //           downloadUrls.add(att['download_url']);
+  //         }
+  //
+  //         if (messageType == 'file' || messageType == 'image') {
+  //           //ha csatolmány akkor speciális üzenetet adunk hozzá
+  //           loadedMessages.add({
+  //             ...message,
+  //             'message_type': messageType,
+  //             'fileNames': fileNames,
+  //             'downloadUrls': downloadUrls,
+  //             'message_text':
+  //                 (message['message_text']?.toString().trim().isEmpty ?? true) ? null : message['message_text'],
+  //           });
+  //         } else {
+  //           loadedMessages.add(message); //ha text típusú akkor csak hozzáadjuk
+  //         }
+  //       }
+  //
+  //       setState(() {
+  //         //majd véglegesen eltároljuk
+  //         _messages = loadedMessages;
+  //       });
+  //
+  //       scrollToBottom();
+  //     }
+  //   } catch (e) {
+  //     ToastMessages.showToastMessages(
+  //       Preferences.isHungarian
+  //           ? "Kapcsolati hiba az üzenetek betöltésénél!"
+  //           : "Connection error while getting messages!",
+  //       0.2,
+  //       Colors.redAccent,
+  //       Icons.error,
+  //       Colors.black,
+  //       const Duration(seconds: 2),
+  //       context,
+  //     );
+  //     log("Hiba történt az üzenetek lekérésekor: ${e.toString()}");
+  //   }
+  // }
 
   void _sendMessage() {
     final message = {
@@ -576,74 +576,74 @@ class _ChatScreenState extends State<ChatScreen> {
     scrollToBottom();
   }
 
-  Future<void> _markMessagesAsRead() async {
-    try {
-      final response = await http.post(
-        Uri.parse(markAsReadUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "chat_id": widget.chatId,
-          "user_id": Preferences.getUserId(), //az a receiver_id aki megkapja tehát az user_id-t kell megadnunk
-        }),
-      );
+  // Future<void> _markMessagesAsRead() async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(markAsReadUrl),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode({
+  //         "chat_id": widget.chatId,
+  //         "user_id": Preferences.getUserId(), //az a receiver_id aki megkapja tehát az user_id-t kell megadnunk
+  //       }),
+  //     );
+  //
+  //     final responseData = jsonDecode(response.body);
+  //
+  //     if (response.statusCode == 200) {
+  //       log("Messages marked as read successfully: ${responseData.toString()}");
+  //       //elküldjük a websocket szervernek is mert chat közben is változhat nem csak betöltéskor
+  //       _channel.sink.add(jsonEncode({
+  //         "message_type": "read_status_update",
+  //         "chat_id": widget.chatId,
+  //         "user_id": Preferences.getUserId(),
+  //       }));
+  //     }
+  //   } catch (e) {
+  //     ToastMessages.showToastMessages(
+  //       Preferences.isHungarian
+  //           ? "Kapcsolati hiba\naz olvasottság átállításánál!"
+  //           : "Connection error while\nmarking the message as read!",
+  //       0.2,
+  //       Colors.redAccent,
+  //       Icons.error,
+  //       Colors.black,
+  //       const Duration(seconds: 3),
+  //       context,
+  //     );
+  //     log("Kapcsolati hiba\naz olvasottság átállításánál: ${e.toString()}");
+  //   }
+  // }
 
-      final responseData = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        log("Messages marked as read successfully: ${responseData.toString()}");
-        //elküldjük a websocket szervernek is mert chat közben is változhat nem csak betöltéskor
-        _channel.sink.add(jsonEncode({
-          "message_type": "read_status_update",
-          "chat_id": widget.chatId,
-          "user_id": Preferences.getUserId(),
-        }));
-      }
-    } catch (e) {
-      ToastMessages.showToastMessages(
-        Preferences.isHungarian
-            ? "Kapcsolati hiba\naz olvasottság átállításánál!"
-            : "Connection error while\nmarking the message as read!",
-        0.2,
-        Colors.redAccent,
-        Icons.error,
-        Colors.black,
-        const Duration(seconds: 3),
-        context,
-      );
-      log("Kapcsolati hiba\naz olvasottság átállításánál: ${e.toString()}");
-    }
-  }
-
-  Future<void> _deleteMessage(int messageId) async {
-    try {
-      final response = await http.post(
-        Uri.parse(deleteMessageUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "message_id": messageId, //elküldjük annak az üzenetnek az id-ját amit törölni akarunk
-        }),
-      );
-
-      if (response.statusCode == 200) {
-        setState(() {
-          _messages.removeWhere((msg) => msg['message_id'] == messageId);
-        });
-      }
-    } catch (e) {
-      ToastMessages.showToastMessages(
-        Preferences.isHungarian
-            ? "Kapcsolati hiba\naz üzenet törlésénél!"
-            : "Connection error while\ndeleting message!",
-        0.2,
-        Colors.redAccent,
-        Icons.error,
-        Colors.black,
-        const Duration(seconds: 3),
-        context,
-      );
-      log("Nem sikerült törölni az üzenetet: ${e.toString()}");
-    }
-  }
+  // Future<void> _deleteMessage(int messageId) async {
+  //   try {
+  //     final response = await http.post(
+  //       Uri.parse(deleteMessageUrl),
+  //       headers: {"Content-Type": "application/json"},
+  //       body: jsonEncode({
+  //         "message_id": messageId, //elküldjük annak az üzenetnek az id-ját amit törölni akarunk
+  //       }),
+  //     );
+  //
+  //     if (response.statusCode == 200) {
+  //       setState(() {
+  //         _messages.removeWhere((msg) => msg['message_id'] == messageId);
+  //       });
+  //     }
+  //   } catch (e) {
+  //     ToastMessages.showToastMessages(
+  //       Preferences.isHungarian
+  //           ? "Kapcsolati hiba\naz üzenet törlésénél!"
+  //           : "Connection error while\ndeleting message!",
+  //       0.2,
+  //       Colors.redAccent,
+  //       Icons.error,
+  //       Colors.black,
+  //       const Duration(seconds: 3),
+  //       context,
+  //     );
+  //     log("Nem sikerült törölni az üzenetet: ${e.toString()}");
+  //   }
+  // }
 
 //ÜZENET KÜLDŐ/KEZELŐ METÓDUSOK VÉGE --------------------------------------------------------------
 
@@ -782,7 +782,7 @@ class _ChatScreenState extends State<ChatScreen> {
           ),
           onPressed: () async {
             Navigator.pop(context);
-            await _deleteMessage(messageId);
+            //await _deleteMessage(messageId);
           },
         ),
       ],

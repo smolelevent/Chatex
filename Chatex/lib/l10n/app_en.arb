@@ -21,7 +21,7 @@
   "username": "Username",
   "emailAddressHelp": "e.g.: someone@example.com",
   "passwordRequirements": "Min. 8 characters, Max. 20 characters,\n1 lowercase, 1 uppercase, and 1 number.",
-  "passwordsDoesntMatch": "The passwords do not match!",
+  "passwordsDoesntMatch": "The passwords doesn't match!",
   "passwordAgain": "Confirm password",
   "registrationButton": "Sign up",
   "successfulRegistration": "Successful registration!",

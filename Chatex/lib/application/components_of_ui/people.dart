@@ -27,14 +27,13 @@ class _PeopleState extends State<People> {
   final TextEditingController _userSearchController =
       TextEditingController(); //a keresési mezőből ez kell hogy kinyerjük a szöveget
 
-  final FocusNode _userSearchFocusNode =
-      FocusNode(); //figyeli a szövegmező fókuszálását
+  final FocusNode _userSearchFocusNode = FocusNode(); //figyeli a szövegmező fókuszálását
+
   bool _isUserSearchFocused = false; //amit itt tárolunk el
 
   final _formKey = GlobalKey<FormBuilderState>();
 
-  List<dynamic> _userSearchResults =
-      []; //listában tároljuk a keresési találatokat
+  List<dynamic> _userSearchResults = []; //listában tároljuk a keresési találatokat
 
   //ameddig ez a időzítő fut addig nem keres (megvárja a felhasználót hogy befejezze az írást)
   Timer? _timer;
@@ -73,8 +72,7 @@ class _PeopleState extends State<People> {
     //ez a metódus a barátjelölések számát kéri le az adatbázisból amit majd megjelenítünk
     try {
       final response = await http.post(
-        Uri.parse(
-            "http://10.0.2.2/ChatexProject/chatex_phps/friends/get/get_friend_request_count.php"),
+        Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/friends/get/get_friend_request_count.php"),
         body: jsonEncode({"user_id": Preferences.getUserId()}),
         headers: {"Content-Type": "application/json"},
       );
@@ -124,8 +122,7 @@ class _PeopleState extends State<People> {
         try {
           final response = await http.post(
             //elküldjük az adatbázisba is a keresett illetőt
-            Uri.parse(
-                "http://10.0.2.2/ChatexProject/chatex_phps/friends/get/search_users.php"),
+            Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/friends/get/search_users.php"),
             body: jsonEncode({"query": query}),
             headers: {"Content-Type": "application/json"},
           );
@@ -173,8 +170,7 @@ class _PeopleState extends State<People> {
     }
 
     final response = await http.post(
-      Uri.parse(
-          "http://10.0.2.2/ChatexProject/chatex_phps/friends/get/check_friend_status.php"),
+      Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/friends/get/check_friend_status.php"),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
         "user_id": Preferences.getUserId(),
@@ -211,8 +207,7 @@ class _PeopleState extends State<People> {
     //ez a metódus barátkérést küld az adott felhasználónak
     try {
       final response = await http.post(
-        Uri.parse(
-            "http://10.0.2.2/ChatexProject/chatex_phps/friends/set/send_friend_request.php"),
+        Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/friends/set/send_friend_request.php"),
         body: jsonEncode({
           "user_id": Preferences.getUserId(),
           "friend_id": friendId,
@@ -232,9 +227,7 @@ class _PeopleState extends State<People> {
         _searchUsers(_userSearchController.text);
 
         ToastMessages.showToastMessages(
-          Preferences.isHungarian
-              ? "Barátjelölés elküldve!"
-              : "Friend request sent!",
+          Preferences.isHungarian ? "Barátjelölés elküldve!" : "Friend request sent!",
           0.2,
           Colors.green,
           Icons.check,
@@ -242,8 +235,7 @@ class _PeopleState extends State<People> {
           const Duration(seconds: 4),
           context,
         );
-      } else if (responseData["message"] ==
-          "Hiba történt a barátjelölés során!") {
+      } else if (responseData["message"] == "Hiba történt a barátjelölés során!") {
         ToastMessages.showToastMessages(
           Preferences.isHungarian
               ? "Hiba történt a barátjelölés során!"
@@ -375,8 +367,7 @@ class _PeopleState extends State<People> {
     );
   }
 
-  Widget _buildCard(IconData icon, Color iconColor, String title,
-      Widget trailing, VoidCallback onTap) {
+  Widget _buildCard(IconData icon, Color iconColor, String title, Widget trailing, VoidCallback onTap) {
     return Card(
       //Card widget adja az alakot míg,
       color: Colors.grey[800],
@@ -417,9 +408,8 @@ class _PeopleState extends State<People> {
           //a regisztrációkor is érvényes követelmények alapján keresünk
           FormBuilderValidators.minLength(
             usernameMinLength,
-            errorText: Preferences.isHungarian
-                ? "A felhasználónév túl rövid! (min 3)"
-                : "The username is too short! (min 3)",
+            errorText:
+                Preferences.isHungarian ? "A felhasználónév túl rövid! (min 3)" : "The username is too short! (min 3)",
             checkNullOrEmpty: false,
           ),
           FormBuilderValidators.maxLength(
@@ -513,8 +503,7 @@ class _PeopleState extends State<People> {
 
     if (profilePicture != null && profilePicture.isNotEmpty) {
       if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
-        final svgString =
-            utf8.decode(base64Decode(profilePicture.split(",")[1]));
+        final svgString = utf8.decode(base64Decode(profilePicture.split(",")[1]));
         profileImage = SvgPicture.string(
           svgString,
           width: 60,

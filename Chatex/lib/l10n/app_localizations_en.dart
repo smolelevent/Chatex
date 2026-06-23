@@ -79,7 +79,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Min. 8 characters, Max. 20 characters,\n1 lowercase, 1 uppercase, and 1 number.';
 
   @override
-  String get passwordsDoesntMatch => 'The passwords do not match!';
+  String get passwordsDoesntMatch => 'The passwords doesn\'t match!';
 
   @override
   String get passwordAgain => 'Confirm password';

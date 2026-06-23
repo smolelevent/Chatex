@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+
 import 'l10n/app_localizations.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
@@ -14,15 +14,14 @@ import 'package:chatex/logic/notifications.dart';
 import 'package:chatex/logic/toast_message.dart';
 import 'package:chatex/logic/preferences.dart';
 import 'package:chatex/logic/auth.dart';
-import 'package:chatex/constants/api_constants.dart';
+
 import 'package:chatex/constants/language_constants.dart';
 import 'package:chatex/constants/validation_constants.dart';
 import 'dart:developer';
-import 'dart:convert';
 
-//AZ XAMPP-OT futtatni kell használat előtt (ha nem indul el akkor setup_xampp.bat-ot kell futtatni!), illetve...
-//A Websocket Server-t is futtatni kell indítás előtt (a terminálon keresztűl a megadott elérési úttal és paranccsal!)
-//parancs: xampp_server\htdocs\ChatexProject\chatex_phps> php server_run.php
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+//TODO: kiemelni a dizájnokat ahol lehet és szétbontani a dart fájlokat ha kell
 
 //GLOBÁLIS METÓDUSOK ELEJE ------------------------------------------------------------------------
 Future<void> main() async {
@@ -32,6 +31,10 @@ Future<void> main() async {
 
   await Preferences.init();
   await NotificationService.init();
+  await Supabase.initialize(
+    url: 'https://avepkpvttorgzpqijdwi.supabase.co',
+    publishableKey: 'sb_publishable_h00ZUF1hdX8YllVG0YLrNg_WKp_4DJ9',
+  );
 
   final String savedLanguageName = Preferences.getPreferredLanguage();
   final String localeCode = languageToLocale[savedLanguageName] ?? 'hu';
@@ -112,32 +115,65 @@ class _AuthWrapperState extends State<AuthWrapper> {
 }
 
 Future<bool> tryAutoLoginByToken() async {
-  final token = Preferences.getToken();
-
   try {
-    final response = await http.post(
-      Uri.parse(validateTokenUrl),
-      headers: {"Content-Type": "application/json"},
-      body: jsonEncode({"token": token}),
-    );
+    final supabase = Supabase.instance.client;
+    final user = supabase.auth.currentUser;
 
-    final responseData = jsonDecode(response.body);
-    if (response.statusCode == 200 && responseData["success"] == true) {
-      //ha sikeres volt az ellenőrzés akkor elmentjük újra az adatokat lokálisan a tokenből kinyerve!
-      Preferences.setUserId(responseData["id"]);
-      Preferences.setPreferredLanguage(responseData["preferred_lang"]);
-      Preferences.setProfilePicture(responseData["profile_picture"]);
-      Preferences.setUsername(responseData["username"]);
-      Preferences.setEmail(responseData["email"]);
-      Preferences.setPasswordHash("password_hash");
-      return true;
+    // Ha a user nem null, az azt jelenti, hogy a Supabase talált egy érvényes
+    // session-t (tokent) a telefonon, tehát a felhasználó be van jelentkezve.
+    if (user != null) {
+      // Lekérjük a felhasználó legfrissebb adatait a TE adatbázisodból
+      final userData = await supabase.from('users').select().eq('email', user.email!).single();
+
+      // Elmentjük az adatokat a lokális Preferences-be, ahogy a régi PHP is tette
+      await Preferences.setUserId(userData['id']);
+      await Preferences.setPreferredLanguage(userData['preferred_lang']);
+      await Preferences.setProfilePicture(userData['profile_picture'] ?? '');
+      await Preferences.setUsername(userData['username']);
+      await Preferences.setEmail(userData['email']);
+      await Preferences.setStatus('online');
+
+      // Frissítjük az állapotot az adatbázisban, hogy mások lássák: online van
+      await supabase.from('users').update({'signed_in': true, 'status': 'online'}).eq('email', user.email!);
+
+      return true; // Sikeres automatikus bejelentkezés, mehet a ChatUI-ra!
     }
   } catch (e) {
-    log("Error during token validation: ${e.toString()}");
+    log("Hiba az automatikus bejelentkezés során: ${e.toString()}");
   }
 
-  return false;
+  // Ha nincs bejelentkezve, vagy hiba történt, biztonságból töröljük a helyi adatokat
+  await Preferences.clearPreferences();
+  return false; // Vissza a LoginUI-ra
 }
+
+// Future<bool> tryAutoLoginByToken() async {
+//   final token = Preferences.getToken();
+//
+//   try {
+//     final response = await http.post(
+//       Uri.parse(validateTokenUrl),
+//       headers: {"Content-Type": "application/json"},
+//       body: jsonEncode({"token": token}),
+//     );
+//
+//     final responseData = jsonDecode(response.body);
+//     if (response.statusCode == 200 && responseData["success"] == true) {
+//       //ha sikeres volt az ellenőrzés akkor elmentjük újra az adatokat lokálisan a tokenből kinyerve!
+//       Preferences.setUserId(responseData["id"]);
+//       Preferences.setPreferredLanguage(responseData["preferred_lang"]);
+//       Preferences.setProfilePicture(responseData["profile_picture"]);
+//       Preferences.setUsername(responseData["username"]);
+//       Preferences.setEmail(responseData["email"]);
+//       Preferences.setPasswordHash("password_hash");
+//       return true;
+//     }
+//   } catch (e) {
+//     log("Error during token validation: ${e.toString()}");
+//   }
+//
+//   return false;
+// }
 
 //GLOBÁLIS METÓDUSOK VÉGE -------------------------------------------------------------------------
 
@@ -345,7 +381,7 @@ class _LoginUIState extends State<LoginUI> {
           _buildDropdownMenu(),
           const CircleAvatar(
             radius: 60,
-            backgroundImage: AssetImage("assets/logo/logo.jpg"),
+            backgroundImage: AssetImage("assets/logo.jpg"),
           ),
           Column(
             children: [
@@ -644,7 +680,7 @@ class _LoginUIState extends State<LoginUI> {
       ),
     );
   }
-//TODO: app stringek nem egységesek angol és a magyar
+
   Widget _buildChatexWidget() {
     final l10n = AppLocalizations.of(context)!;
     return Padding(

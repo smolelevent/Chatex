@@ -9,8 +9,7 @@ class Preferences {
   static SharedPreferences? _prefs; //SharedPreferences osztály példánya
 
   //ez a változó a nyelv változását figyeli, és ha eltér a "Magyar"-tól akkor lefrissíti a többi Dart-ban a nyelvet
-  static ValueNotifier<String> languageNotifier =
-      ValueNotifier<String>("Magyar");
+  static ValueNotifier<String> languageNotifier = ValueNotifier<String>("Magyar");
 
 //OSZTÁLY VÁLTOZÓK VÉGE ---------------------------------------------------------------------------
 
@@ -53,10 +52,6 @@ class Preferences {
     await _prefs?.setString("status", status);
   }
 
-  static Future<void> setToken(String token) async {
-    await _prefs?.setString('jwt_token', token);
-  }
-
   //Setterek VÉGE ---------------------------------------------------------------------------------
 
   //Getterek ELEJE --------------------------------------------------------------------------------
@@ -71,8 +66,7 @@ class Preferences {
       //a Future.microtask szükséges, mivel exceptiont ad ha túl gyorsan kerülnek betöltésre (még nincs értéke)
       languageNotifier.value = _prefs?.getString('preferred_lang') ?? 'Magyar';
     });
-    return _prefs?.getString('preferred_lang') ??
-        'Magyar'; //alapértelmezett a Magyar
+    return _prefs?.getString('preferred_lang') ?? 'Magyar'; //alapértelmezett a Magyar
   }
 
   static String? getProfilePicture() {
@@ -94,11 +88,6 @@ class Preferences {
   static String? getStatus() {
     //alapértelmezett státusz az offline (nem elérhető a felhasználó)
     return _prefs?.getString('status') ?? 'offline';
-  }
-
-  static String getToken() {
-    //token alapértelmezett értéke pedig egy üres string (nem jelentkezett be)
-    return _prefs?.getString('jwt_token') ?? '';
   }
 
   //Getterek VÉGE ---------------------------------------------------------------------------------
