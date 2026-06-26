@@ -1,24 +1,21 @@
 import 'package:flutter/material.dart';
-
-import 'l10n/app_localizations.dart';
+import 'package:chatex/l10n/app_localizations.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:chatex/logic/locale_provider.dart';
-import 'package:chatex/main/sign_up.dart';
-import 'package:chatex/main/reset_password.dart';
-import 'package:chatex/application/components_of_chat/build_ui.dart';
-import 'package:chatex/logic/notifications.dart';
-import 'package:chatex/logic/toast_message.dart';
-import 'package:chatex/logic/preferences.dart';
-import 'package:chatex/logic/auth.dart';
-
-import 'package:chatex/constants/language_constants.dart';
-import 'package:chatex/constants/validation_constants.dart';
+import 'package:chatex/core/utils/locale_provider.dart';
+import 'package:chatex/features/auth/presentation/screens/sign_up.dart';
+import 'package:chatex/features/auth/presentation/screens/reset_password.dart';
+import 'package:chatex/features/home/presentation/screens/home_screen.dart';
+import 'package:chatex/features/notifications/data/notifications.dart';
+import 'package:chatex/core/utils/toast_message.dart';
+import 'package:chatex/core/local_storage/preferences.dart';
+import 'package:chatex/features/auth/data/auth.dart';
+import 'package:chatex/core/constants/language_constants.dart';
+import 'package:chatex/core/constants/validation_constants.dart';
 import 'dart:developer';
-
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 //TODO: kiemelni a dizájnokat ahol lehet és szétbontani a dart fájlokat ha kell
@@ -125,7 +122,6 @@ Future<bool> tryAutoLoginByToken() async {
       // Lekérjük a felhasználó legfrissebb adatait a TE adatbázisodból
       final userData = await supabase.from('users').select().eq('email', user.email!).single();
 
-      // Elmentjük az adatokat a lokális Preferences-be, ahogy a régi PHP is tette
       await Preferences.setUserId(userData['id']);
       await Preferences.setPreferredLanguage(userData['preferred_lang']);
       await Preferences.setProfilePicture(userData['profile_picture'] ?? '');
@@ -381,7 +377,7 @@ class _LoginUIState extends State<LoginUI> {
           _buildDropdownMenu(),
           const CircleAvatar(
             radius: 60,
-            backgroundImage: AssetImage("assets/logo.jpg"),
+            backgroundImage: AssetImage("assets/images/logo.jpg"),
           ),
           Column(
             children: [
@@ -419,7 +415,7 @@ class _LoginUIState extends State<LoginUI> {
                 emailValidationRegex,
                 unicode: true,
               ),
-              errorText: l10n.emailIsInvalid,
+              errorText: l10n.emailAddressInvalid,
               checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
@@ -444,10 +440,8 @@ class _LoginUIState extends State<LoginUI> {
         name: "password",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.minLength(passwordMinLength,
-              errorText: l10n.passwordIsTooShort, checkNullOrEmpty: false),
-          FormBuilderValidators.maxLength(passwordMaxLength,
-              errorText: l10n.passwordIsTooLong, checkNullOrEmpty: false),
+          FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordTooShort, checkNullOrEmpty: false),
+          FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordTooLong, checkNullOrEmpty: false),
           FormBuilderValidators.hasUppercaseChars(
               atLeast: 1,
               regex: RegExp(r'\p{Lu}', unicode: true),
@@ -682,15 +676,14 @@ class _LoginUIState extends State<LoginUI> {
   }
 
   Widget _buildChatexWidget() {
-    final l10n = AppLocalizations.of(context)!;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+    return const Padding(
+      padding: EdgeInsets.only(bottom: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            l10n.chatex,
-            style: const TextStyle(
+            "Chatex",
+            style: TextStyle(
               color: Colors.white,
               fontSize: 20.0,
               fontWeight: FontWeight.w500,

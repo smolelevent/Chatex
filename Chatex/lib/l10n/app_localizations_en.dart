@@ -15,18 +15,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get language => 'Language';
 
   @override
-  String get emailIsInvalid => 'The email address is invalid!';
+  String get emailAddressInvalid => 'The email address is invalid!';
 
   @override
   String get emailAddress => 'E-mail address';
 
   @override
-  String get passwordIsTooShort =>
+  String get passwordTooShort =>
       'The password is too short! (min 8 characters)';
 
   @override
-  String get passwordIsTooLong =>
-      'The password is too long! (max 20 characters)';
+  String get passwordTooLong => 'The password is too long! (max 20 characters)';
 
   @override
   String get passwordNeedsUppercase =>
@@ -82,7 +81,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get passwordsDoesntMatch => 'The passwords doesn\'t match!';
 
   @override
-  String get passwordAgain => 'Confirm password';
+  String get confirmPassword => 'Confirm password';
 
   @override
   String get registrationButton => 'Sign up';
@@ -91,7 +90,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get successfulRegistration => 'Successful registration!';
 
   @override
-  String get emailIsAlreadyUsed => 'User already exists with this email!';
+  String get emailAddressAlreadyUsed =>
+      'User already exists with this email address!';
 
   @override
   String get connectionErrorRegistration =>
@@ -101,7 +101,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get successfulLogin => 'Successful login!';
 
   @override
-  String get loginCredentialsError => 'Incorrect email or password!';
+  String get loginCredentialsError => 'Incorrect email address or password!';
 
   @override
   String get errorCode => 'Error code:';
@@ -116,7 +116,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetPasswordEmailSent => 'Password recovery email sent!';
 
   @override
-  String get noUserWithThisEmail => 'No user with this email address!';
+  String get noUserWithThisEmailAddress => 'No user with this email address!';
 
   @override
   String get connectionErrorResetPassword =>
@@ -128,7 +128,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String permissionAccess(String typeOfPermission) {
+  String permissionRequired(String typeOfPermission) {
     return 'Permission required for\n$typeOfPermission!';
   }
 
@@ -144,17 +144,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get download => 'download';
 
   @override
-  String get chatex => 'Chatex';
-
-  @override
   String get groups => 'Groups';
 
   @override
   String get createGroupsTitle => 'Create groups';
-
-  @override
-  String get dummyGroupMessage =>
-      'Unfortunately, the groups feature was not completed for the exam... More information about the difficulties will be heard during our exam presentation!';
 
   @override
   String get settings => 'Settings';
@@ -184,10 +177,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get justNow => 'Just now';
 
   @override
-  String get minutesAgo => 'minute(s) ago';
+  String minutesAgo(int minutes) {
+    return '$minutes minute(s) ago';
+  }
 
   @override
-  String get hoursAgo => 'hour(s) ago';
+  String hoursAgo(int hours) {
+    return '$hours hour(s) ago';
+  }
 
   @override
   String get yesterday => 'Yesterday';
@@ -208,7 +205,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get delete => 'Delete';
 
   @override
-  String get deleteMessageConfirm =>
+  String get areYouSureDeleteMessage =>
       'Are you sure you want to delete this message?';
 
   @override
@@ -217,13 +214,13 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get available => 'Online';
+  String get online => 'online';
 
   @override
   String get userInformation => 'User Information';
 
   @override
-  String get chatIsEmpty => 'The chat is empty.';
+  String get chatEmpty => 'The chat is empty.';
 
   @override
   String get scrollToBottom => 'Scroll to bottom';
@@ -248,7 +245,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You don\'t have any chats yet.\nStart one clicking on the ';
 
   @override
-  String get iconPress => ' icon!';
+  String get iconEndOfSentence => ' icon!';
 
   @override
   String get you => 'You: ';
@@ -266,11 +263,14 @@ class AppLocalizationsEn extends AppLocalizations {
   String get couldntLoadFriends => 'Couldn\'t load your friends!';
 
   @override
+  String get updateLanguageSuccesful => 'Updating language was successful!';
+
+  @override
   String get connectionErrorGettingFriendList =>
       'Connection error while\ngetting friend list!';
 
   @override
-  String get connectionErrorGettingFriends =>
+  String get connectionErrorLoadingFriends =>
       'Connection error while\nloading friends!';
 
   @override
@@ -306,10 +306,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteChat => 'Delete chat';
 
   @override
-  String get areYouSure => 'Are you sure you want to delete the chat?';
+  String get areYouSureDeleteChat =>
+      'Are you sure you want to delete the chat?';
 
   @override
-  String get warning => 'This action cannot be undone!';
+  String get actionCannotUndone => 'This action cannot be undone!';
 
   @override
   String get seen => 'Seen';
@@ -324,7 +325,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friends => 'Friends';
 
   @override
-  String get userOutputGroups => 'Couldn\'t load your groups!';
+  String get couldntLoadGroups => 'Couldn\'t load your groups!';
 
   @override
   String get connectionErrorGettingGroupList =>
@@ -364,13 +365,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendRequests => 'Friend requests';
 
   @override
-  String get requests => 'Friend Requests';
-
-  @override
   String get manageFriends => 'Manage friends';
 
   @override
-  String get peopleUsername => 'Enter the username!';
+  String get enterUsername => 'Enter the username!';
 
   @override
   String get friend => 'Friend';
@@ -407,7 +405,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get logout => 'Logout';
 
   @override
-  String get logoutConfirm => 'Are you sure you want to logout?';
+  String get areYouSureLogout => 'Are you sure you want to logout?';
 
   @override
   String get yes => 'Yes';
@@ -455,13 +453,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get friendRequest => 'Friend request';
 
   @override
-  String get friendDeleted => 'Friend removed!';
+  String get friendRemoved => 'Friend removed!';
 
   @override
   String get errorWhileDeletingFriend => 'Error while deleting friend';
 
   @override
-  String get connectionErrorDeletingFriend =>
+  String get connectionErrorRemovingFriend =>
       'Connection error while\nremoving friend!';
 
   @override
@@ -474,7 +472,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get removeFriend => 'Remove friend';
 
   @override
-  String get removeFriendConfirm =>
+  String get areYouSureRemoveFriend =>
       'Are you sure you want to remove this friend?';
 
   @override
@@ -491,15 +489,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get errorUpdatingUsername => 'Failed to update username!';
 
   @override
+  String get remove => 'Remove';
+
+  @override
   String get connectionErrorUpdatingUsername =>
       'Connection error while\nupdating username!';
 
   @override
-  String get errorUpdatingEmail => 'Failed to update email!';
+  String get errorUpdatingEmailAddress => 'Failed to update email address!';
 
   @override
-  String get connectionErrorUpdatingEmail =>
-      'Connection error while\nupdating email!';
+  String get connectionErrorUpdatingEmailAddress =>
+      'Connection error while\nupdating email address!';
 
   @override
   String get errorUpdatingPassword => 'Password update failed!';
@@ -509,6 +510,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Connection error while\nupdating password!';
 
   @override
+  String get emailAddressUpdated => 'Email address updated successfully!';
+
+  @override
+  String get usernameUpdated => 'Username updated successfully!';
+
+  @override
   String get unsupportedFileFormat => 'Unsupported file format!';
 
   @override
@@ -516,6 +523,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorSelectingImage => 'Error while selecting image!';
+
+  @override
+  String get passwordUpdated => 'Password updated!';
 
   @override
   String get errorUpdatingProfilePicture => 'Failed to update profile picture!';
@@ -528,7 +538,11 @@ class AppLocalizationsEn extends AppLocalizations {
   String get changesSaved => 'Changes saved!';
 
   @override
-  String get cannotModifyToSameValue => 'Cannot modify to the same value(s)!';
+  String get cantModifySameValue => 'Can\'t modify to the same value(s)!';
+
+  @override
+  String get profilePictureUpdatedSucessfully =>
+      'Profile picture updated successfully!';
 
   @override
   String get accountDeleted => 'Account deleted!';
@@ -547,7 +561,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get usernameCannotBeEmpty => 'The username\ncannot be empty!';
 
   @override
-  String get emailCannotBeEmpty => 'The email address\ncannot be empty!';
+  String get emailAddressCannotBeEmpty => 'The email address\ncannot be empty!';
 
   @override
   String get changePassword => 'Change password';
@@ -573,6 +587,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get password => 'Password';
 
   @override
+  String get accountManagement => 'Account management';
+
+  @override
   String get errorUpdatingLanguage => 'Error while\nupdating language!';
 
   @override
@@ -595,8 +612,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get messageTooLongTitle => 'Message too long!';
 
   @override
-  String get messageTooLongContent =>
-      'You can send a message up to 5000 characters!';
+  String messageTooLongContent(int characters) {
+    return 'You can send a message up to $characters characters!';
+  }
 
   @override
   String get back => 'Back';

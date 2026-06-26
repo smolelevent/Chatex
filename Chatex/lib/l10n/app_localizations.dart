@@ -110,11 +110,11 @@ abstract class AppLocalizations {
   /// **'Language'**
   String get language;
 
-  /// No description provided for @emailIsInvalid.
+  /// No description provided for @emailAddressInvalid.
   ///
   /// In en, this message translates to:
   /// **'The email address is invalid!'**
-  String get emailIsInvalid;
+  String get emailAddressInvalid;
 
   /// No description provided for @emailAddress.
   ///
@@ -122,17 +122,17 @@ abstract class AppLocalizations {
   /// **'E-mail address'**
   String get emailAddress;
 
-  /// No description provided for @passwordIsTooShort.
+  /// No description provided for @passwordTooShort.
   ///
   /// In en, this message translates to:
   /// **'The password is too short! (min 8 characters)'**
-  String get passwordIsTooShort;
+  String get passwordTooShort;
 
-  /// No description provided for @passwordIsTooLong.
+  /// No description provided for @passwordTooLong.
   ///
   /// In en, this message translates to:
   /// **'The password is too long! (max 20 characters)'**
-  String get passwordIsTooLong;
+  String get passwordTooLong;
 
   /// No description provided for @passwordNeedsUppercase.
   ///
@@ -230,11 +230,11 @@ abstract class AppLocalizations {
   /// **'The passwords doesn\'t match!'**
   String get passwordsDoesntMatch;
 
-  /// No description provided for @passwordAgain.
+  /// No description provided for @confirmPassword.
   ///
   /// In en, this message translates to:
   /// **'Confirm password'**
-  String get passwordAgain;
+  String get confirmPassword;
 
   /// No description provided for @registrationButton.
   ///
@@ -248,11 +248,11 @@ abstract class AppLocalizations {
   /// **'Successful registration!'**
   String get successfulRegistration;
 
-  /// No description provided for @emailIsAlreadyUsed.
+  /// No description provided for @emailAddressAlreadyUsed.
   ///
   /// In en, this message translates to:
-  /// **'User already exists with this email!'**
-  String get emailIsAlreadyUsed;
+  /// **'User already exists with this email address!'**
+  String get emailAddressAlreadyUsed;
 
   /// No description provided for @connectionErrorRegistration.
   ///
@@ -269,7 +269,7 @@ abstract class AppLocalizations {
   /// No description provided for @loginCredentialsError.
   ///
   /// In en, this message translates to:
-  /// **'Incorrect email or password!'**
+  /// **'Incorrect email address or password!'**
   String get loginCredentialsError;
 
   /// No description provided for @errorCode.
@@ -296,11 +296,11 @@ abstract class AppLocalizations {
   /// **'Password recovery email sent!'**
   String get resetPasswordEmailSent;
 
-  /// No description provided for @noUserWithThisEmail.
+  /// No description provided for @noUserWithThisEmailAddress.
   ///
   /// In en, this message translates to:
   /// **'No user with this email address!'**
-  String get noUserWithThisEmail;
+  String get noUserWithThisEmailAddress;
 
   /// No description provided for @connectionErrorResetPassword.
   ///
@@ -314,11 +314,11 @@ abstract class AppLocalizations {
   /// **'Connection error: {action}!'**
   String connectionError(String action);
 
-  /// No description provided for @permissionAccess.
+  /// No description provided for @permissionRequired.
   ///
   /// In en, this message translates to:
   /// **'Permission required for\n{typeOfPermission}!'**
-  String permissionAccess(String typeOfPermission);
+  String permissionRequired(String typeOfPermission);
 
   /// No description provided for @permissionDenied.
   ///
@@ -338,12 +338,6 @@ abstract class AppLocalizations {
   /// **'download'**
   String get download;
 
-  /// No description provided for @chatex.
-  ///
-  /// In en, this message translates to:
-  /// **'Chatex'**
-  String get chatex;
-
   /// No description provided for @groups.
   ///
   /// In en, this message translates to:
@@ -355,12 +349,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Create groups'**
   String get createGroupsTitle;
-
-  /// No description provided for @dummyGroupMessage.
-  ///
-  /// In en, this message translates to:
-  /// **'Unfortunately, the groups feature was not completed for the exam... More information about the difficulties will be heard during our exam presentation!'**
-  String get dummyGroupMessage;
 
   /// No description provided for @settings.
   ///
@@ -413,14 +401,14 @@ abstract class AppLocalizations {
   /// No description provided for @minutesAgo.
   ///
   /// In en, this message translates to:
-  /// **'minute(s) ago'**
-  String get minutesAgo;
+  /// **'{minutes} minute(s) ago'**
+  String minutesAgo(int minutes);
 
   /// No description provided for @hoursAgo.
   ///
   /// In en, this message translates to:
-  /// **'hour(s) ago'**
-  String get hoursAgo;
+  /// **'{hours} hour(s) ago'**
+  String hoursAgo(int hours);
 
   /// No description provided for @yesterday.
   ///
@@ -458,11 +446,11 @@ abstract class AppLocalizations {
   /// **'Delete'**
   String get delete;
 
-  /// No description provided for @deleteMessageConfirm.
+  /// No description provided for @areYouSureDeleteMessage.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to delete this message?'**
-  String get deleteMessageConfirm;
+  String get areYouSureDeleteMessage;
 
   /// No description provided for @lastSeen.
   ///
@@ -470,11 +458,11 @@ abstract class AppLocalizations {
   /// **'Last seen: {formatLastSeen}'**
   String lastSeen(String formatLastSeen);
 
-  /// No description provided for @available.
+  /// No description provided for @online.
   ///
   /// In en, this message translates to:
-  /// **'Online'**
-  String get available;
+  /// **'online'**
+  String get online;
 
   /// No description provided for @userInformation.
   ///
@@ -482,11 +470,11 @@ abstract class AppLocalizations {
   /// **'User Information'**
   String get userInformation;
 
-  /// No description provided for @chatIsEmpty.
+  /// No description provided for @chatEmpty.
   ///
   /// In en, this message translates to:
   /// **'The chat is empty.'**
-  String get chatIsEmpty;
+  String get chatEmpty;
 
   /// No description provided for @scrollToBottom.
   ///
@@ -530,11 +518,11 @@ abstract class AppLocalizations {
   /// **'You don\'t have any chats yet.\nStart one clicking on the '**
   String get noChats;
 
-  /// No description provided for @iconPress.
+  /// No description provided for @iconEndOfSentence.
   ///
   /// In en, this message translates to:
   /// **' icon!'**
-  String get iconPress;
+  String get iconEndOfSentence;
 
   /// No description provided for @you.
   ///
@@ -566,17 +554,23 @@ abstract class AppLocalizations {
   /// **'Couldn\'t load your friends!'**
   String get couldntLoadFriends;
 
+  /// No description provided for @updateLanguageSuccesful.
+  ///
+  /// In en, this message translates to:
+  /// **'Updating language was successful!'**
+  String get updateLanguageSuccesful;
+
   /// No description provided for @connectionErrorGettingFriendList.
   ///
   /// In en, this message translates to:
   /// **'Connection error while\ngetting friend list!'**
   String get connectionErrorGettingFriendList;
 
-  /// No description provided for @connectionErrorGettingFriends.
+  /// No description provided for @connectionErrorLoadingFriends.
   ///
   /// In en, this message translates to:
   /// **'Connection error while\nloading friends!'**
-  String get connectionErrorGettingFriends;
+  String get connectionErrorLoadingFriends;
 
   /// No description provided for @chatCreated.
   ///
@@ -638,17 +632,17 @@ abstract class AppLocalizations {
   /// **'Delete chat'**
   String get deleteChat;
 
-  /// No description provided for @areYouSure.
+  /// No description provided for @areYouSureDeleteChat.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to delete the chat?'**
-  String get areYouSure;
+  String get areYouSureDeleteChat;
 
-  /// No description provided for @warning.
+  /// No description provided for @actionCannotUndone.
   ///
   /// In en, this message translates to:
   /// **'This action cannot be undone!'**
-  String get warning;
+  String get actionCannotUndone;
 
   /// No description provided for @seen.
   ///
@@ -674,11 +668,11 @@ abstract class AppLocalizations {
   /// **'Friends'**
   String get friends;
 
-  /// No description provided for @userOutputGroups.
+  /// No description provided for @couldntLoadGroups.
   ///
   /// In en, this message translates to:
   /// **'Couldn\'t load your groups!'**
-  String get userOutputGroups;
+  String get couldntLoadGroups;
 
   /// No description provided for @connectionErrorGettingGroupList.
   ///
@@ -740,23 +734,17 @@ abstract class AppLocalizations {
   /// **'Friend requests'**
   String get friendRequests;
 
-  /// No description provided for @requests.
-  ///
-  /// In en, this message translates to:
-  /// **'Friend Requests'**
-  String get requests;
-
   /// No description provided for @manageFriends.
   ///
   /// In en, this message translates to:
   /// **'Manage friends'**
   String get manageFriends;
 
-  /// No description provided for @peopleUsername.
+  /// No description provided for @enterUsername.
   ///
   /// In en, this message translates to:
   /// **'Enter the username!'**
-  String get peopleUsername;
+  String get enterUsername;
 
   /// No description provided for @friend.
   ///
@@ -824,11 +812,11 @@ abstract class AppLocalizations {
   /// **'Logout'**
   String get logout;
 
-  /// No description provided for @logoutConfirm.
+  /// No description provided for @areYouSureLogout.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to logout?'**
-  String get logoutConfirm;
+  String get areYouSureLogout;
 
   /// No description provided for @yes.
   ///
@@ -914,11 +902,11 @@ abstract class AppLocalizations {
   /// **'Friend request'**
   String get friendRequest;
 
-  /// No description provided for @friendDeleted.
+  /// No description provided for @friendRemoved.
   ///
   /// In en, this message translates to:
   /// **'Friend removed!'**
-  String get friendDeleted;
+  String get friendRemoved;
 
   /// No description provided for @errorWhileDeletingFriend.
   ///
@@ -926,11 +914,11 @@ abstract class AppLocalizations {
   /// **'Error while deleting friend'**
   String get errorWhileDeletingFriend;
 
-  /// No description provided for @connectionErrorDeletingFriend.
+  /// No description provided for @connectionErrorRemovingFriend.
   ///
   /// In en, this message translates to:
   /// **'Connection error while\nremoving friend!'**
-  String get connectionErrorDeletingFriend;
+  String get connectionErrorRemovingFriend;
 
   /// No description provided for @currentlyNoFriends.
   ///
@@ -950,11 +938,11 @@ abstract class AppLocalizations {
   /// **'Remove friend'**
   String get removeFriend;
 
-  /// No description provided for @removeFriendConfirm.
+  /// No description provided for @areYouSureRemoveFriend.
   ///
   /// In en, this message translates to:
   /// **'Are you sure you want to remove this friend?'**
-  String get removeFriendConfirm;
+  String get areYouSureRemoveFriend;
 
   /// No description provided for @updatedSuccessfully.
   ///
@@ -974,23 +962,29 @@ abstract class AppLocalizations {
   /// **'Failed to update username!'**
   String get errorUpdatingUsername;
 
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
   /// No description provided for @connectionErrorUpdatingUsername.
   ///
   /// In en, this message translates to:
   /// **'Connection error while\nupdating username!'**
   String get connectionErrorUpdatingUsername;
 
-  /// No description provided for @errorUpdatingEmail.
+  /// No description provided for @errorUpdatingEmailAddress.
   ///
   /// In en, this message translates to:
-  /// **'Failed to update email!'**
-  String get errorUpdatingEmail;
+  /// **'Failed to update email address!'**
+  String get errorUpdatingEmailAddress;
 
-  /// No description provided for @connectionErrorUpdatingEmail.
+  /// No description provided for @connectionErrorUpdatingEmailAddress.
   ///
   /// In en, this message translates to:
-  /// **'Connection error while\nupdating email!'**
-  String get connectionErrorUpdatingEmail;
+  /// **'Connection error while\nupdating email address!'**
+  String get connectionErrorUpdatingEmailAddress;
 
   /// No description provided for @errorUpdatingPassword.
   ///
@@ -1003,6 +997,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connection error while\nupdating password!'**
   String get connectionErrorUpdatingPassword;
+
+  /// No description provided for @emailAddressUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address updated successfully!'**
+  String get emailAddressUpdated;
+
+  /// No description provided for @usernameUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Username updated successfully!'**
+  String get usernameUpdated;
 
   /// No description provided for @unsupportedFileFormat.
   ///
@@ -1022,6 +1028,12 @@ abstract class AppLocalizations {
   /// **'Error while selecting image!'**
   String get errorSelectingImage;
 
+  /// No description provided for @passwordUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Password updated!'**
+  String get passwordUpdated;
+
   /// No description provided for @errorUpdatingProfilePicture.
   ///
   /// In en, this message translates to:
@@ -1040,11 +1052,17 @@ abstract class AppLocalizations {
   /// **'Changes saved!'**
   String get changesSaved;
 
-  /// No description provided for @cannotModifyToSameValue.
+  /// No description provided for @cantModifySameValue.
   ///
   /// In en, this message translates to:
-  /// **'Cannot modify to the same value(s)!'**
-  String get cannotModifyToSameValue;
+  /// **'Can\'t modify to the same value(s)!'**
+  String get cantModifySameValue;
+
+  /// No description provided for @profilePictureUpdatedSucessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile picture updated successfully!'**
+  String get profilePictureUpdatedSucessfully;
 
   /// No description provided for @accountDeleted.
   ///
@@ -1076,11 +1094,11 @@ abstract class AppLocalizations {
   /// **'The username\ncannot be empty!'**
   String get usernameCannotBeEmpty;
 
-  /// No description provided for @emailCannotBeEmpty.
+  /// No description provided for @emailAddressCannotBeEmpty.
   ///
   /// In en, this message translates to:
   /// **'The email address\ncannot be empty!'**
-  String get emailCannotBeEmpty;
+  String get emailAddressCannotBeEmpty;
 
   /// No description provided for @changePassword.
   ///
@@ -1123,6 +1141,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password'**
   String get password;
+
+  /// No description provided for @accountManagement.
+  ///
+  /// In en, this message translates to:
+  /// **'Account management'**
+  String get accountManagement;
 
   /// No description provided for @errorUpdatingLanguage.
   ///
@@ -1169,8 +1193,8 @@ abstract class AppLocalizations {
   /// No description provided for @messageTooLongContent.
   ///
   /// In en, this message translates to:
-  /// **'You can send a message up to 5000 characters!'**
-  String get messageTooLongContent;
+  /// **'You can send a message up to {characters} characters!'**
+  String messageTooLongContent(int characters);
 
   /// No description provided for @back.
   ///
