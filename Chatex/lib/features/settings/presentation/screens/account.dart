@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:chatex/main.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
 import 'package:chatex/core/utils/toast_message.dart';
 import 'package:chatex/core/constants/validation_constants.dart';
-import 'dart:typed_data';
 import 'dart:developer';
-import 'dart:convert';
 import 'dart:io';
 import 'package:chatex/l10n/app_localizations.dart';
+import 'package:chatex/features/auth/presentation/screens/login_screen.dart';
+import 'package:chatex/features/settings/data/settings_service.dart';
+import 'package:chatex/core/presentation/widgets/custom_avatar.dart';
 
 //AccountSetting OSZTÁLY ELEJE --------------------------------------------------------------------
 class AccountSetting extends StatefulWidget {
@@ -22,6 +20,10 @@ class AccountSetting extends StatefulWidget {
   @override
   State<AccountSetting> createState() => _AccountSettingState();
 }
+
+//TODO: profilkép kiválasztásánál módosítós toast megjelent módosítottam is, de kiírta hogy hiba majd hogy sikerült és nem változott meg adatbázisba pedig semmi nincs
+//TODO: email cím kiírja hiba történt majd hogy sikeres és semmi nem történik
+//TODO: mi ez a lila toast geci
 
 class _AccountSettingState extends State<AccountSetting> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
@@ -64,19 +66,12 @@ class _AccountSettingState extends State<AccountSetting> {
   final _formKey = GlobalKey<FormBuilderState>();
   bool _isFormValid = false;
 
-  //cacheléshez szükséges változók (hogy a profilkép minden képernyő frissítéskor ne pislákoljon)
-  ImageProvider? _cachedProfileImage;
-  Uint8List? _cachedSvgBytes;
-
 //OSZTÁLYON BELÜLI VÁLTOZÓK VÉGE ------------------------------------------------------------------
 
 //HÁTTÉR FOLYAMATOK ELEJE -------------------------------------------------------------------------
   @override
   void initState() {
     super.initState();
-    _cacheProfileImage();
-
-    //FocusNode-okat össze kötjük a bool változójukkal
 
     _usernameFocusNode.addListener(() {
       setState(() {
@@ -103,7 +98,6 @@ class _AccountSettingState extends State<AccountSetting> {
     });
 
     //ha megjelenik egy input mező frissítsük a képernyőt
-
     _usernameController.addListener(() {
       if (_isEditingUsername) setState(() {});
     });
@@ -117,7 +111,6 @@ class _AccountSettingState extends State<AccountSetting> {
     });
 
     //mindegyik kontrollernél és focusNode-nál figyeljük hogy van e valid mező hogy a gomb megfelelően frissítsen
-
     _usernameController.addListener(_onAnyFieldValid);
     _emailController.addListener(_onAnyFieldValid);
     _passwordController.addListener(_onAnyFieldValid);
@@ -144,18 +137,6 @@ class _AccountSettingState extends State<AccountSetting> {
     _passwordConfirmFocusNode.dispose();
   }
 
-  void _cacheProfileImage() {
-    //cacheljük a profilképet hogy ne "pislálkoljon"
-    if (_profilePicture!.startsWith("data:image/svg+xml;base64,")) {
-      _cachedSvgBytes = base64Decode(_profilePicture!.split(",")[1]);
-      _cachedProfileImage = null;
-    } else if (_profilePicture!.startsWith("data:image/")) {
-      final base64Data = base64Decode(_profilePicture!.split(",")[1]);
-      _cachedProfileImage = MemoryImage(base64Data);
-      _cachedSvgBytes = null;
-    }
-  }
-
   void _onAnyFieldValid() {
     //ez dönti el hogy engedélyezve legyen a mentés gomb vagy sem
     //minden input változásnál lefut
@@ -168,8 +149,7 @@ class _AccountSettingState extends State<AccountSetting> {
     final isEmailValid = currentState.fields['email']?.validate() ?? false;
 
     // Jelszónál dupla feltétel: csak akkor nézzük, ha a megerősítő jelszó is valid
-    final isPasswordValid = (currentState.fields['password']?.validate() ?? false) &&
-        (currentState.fields['password_confirm']?.validate() ?? false);
+    final isPasswordValid = (currentState.fields['password']?.validate() ?? false) && (currentState.fields['password_confirm']?.validate() ?? false);
 
     // Profilkép változás ha a kiválasztott kép nem üres
     final hasNewProfilePicture = _selectedImage != null;
@@ -183,337 +163,322 @@ class _AccountSettingState extends State<AccountSetting> {
     });
   }
 
-  Future<void> _updateUsername(String newUsername) async {
-    //ez a metódus frissíti a felhasználónevet a megadott string-el
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/account/update_username.php"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "user_id": Preferences.getUserId(),
-            "username": newUsername,
-          }),
-        );
+  Future<bool> _updateUsername(String newUsername) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await SettingsService().updateUsername(Preferences.getUserId()!, newUsername);
+      await Preferences.setUsername(newUsername);
 
-        final responseData = jsonDecode(response.body);
-
-        if (responseData["status"] == "success") {
-          //lokálisan is frissítjük a nevet
-          await Preferences.setUsername(newUsername);
-
-          ToastMessages.showToastMessages(
-            l10n.usernameUpdated,
-            0.2,
-            Colors.green,
-            Icons.check,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        } else {
-          ToastMessages.showToastMessages(
-            l10n.errorUpdatingUsername,
-            0.2,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        }
-      } catch (e) {
-        ToastMessages.showToastMessages(
-          l10n.connectionErrorUpdatingUsername,
-          0.2,
-          Colors.redAccent,
-          Icons.error_rounded,
-          Colors.black,
-          const Duration(seconds: 3),
-          context,
-        );
-        log("Kapcsolati hiba a felhasználónév módosítása közben! ${e.toString()}");
+      if (mounted) {
+        ToastMessages.showToastMessages(l10n.usernameUpdated, 0.2, Colors.green, Icons.check, Colors.black, const Duration(seconds: 2), context);
       }
+      return true;
+      //else { TODO: kell-e?
+//         ToastMessages.showToastMessages(
+//           l10n.errorUpdatingUsername,
+//           0.2,
+//           Colors.redAccent,
+//           Icons.error_rounded,
+//           Colors.black,
+//           const Duration(seconds: 2),
+//           context,
+//         );
+//       }
+    } catch (e) {
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorUpdatingUsername, 0.2, Colors.redAccent, Icons.error_rounded, Colors.black, const Duration(seconds: 2), context);
+      }
+      log("Hiba a felhasználónév módosítása közben! $e");
+      return false;
     }
   }
 
-  Future<void> _updateEmail(String newEmail) async {
-    //ez a metódus frissíti az email címet a megadott id és string alapján
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/account/update_email.php"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "user_id": Preferences.getUserId(),
-            "email": newEmail,
-          }),
-        );
+  Future<bool> _updateEmail(String newEmail) async {
+    if (!mounted) return false;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await SettingsService().updateEmail(Preferences.getUserId()!, newEmail);
+      await Preferences.setEmail(newEmail);
 
-        final responseData = jsonDecode(response.body);
-
-        if (responseData["status"] == "success") {
-          //lokális mentés
-          await Preferences.setEmail(newEmail);
-          ToastMessages.showToastMessages(
-            l10n.emailAddressUpdated,
-            0.2,
-            Colors.green,
-            Icons.check,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        } else {
-          ToastMessages.showToastMessages(
-            l10n.errorUpdatingEmailAddress,
-            0.2,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        }
-      } catch (e) {
-        ToastMessages.showToastMessages(
-          l10n.connectionErrorUpdatingEmailAddress,
-          0.2,
-          Colors.redAccent,
-          Icons.error_rounded,
-          Colors.black,
-          const Duration(seconds: 3),
-          context,
-        );
-        log("Kapcsolati hiba az email frissítése közben! ${e.toString()}");
+      if (mounted) {
+        ToastMessages.showToastMessages(l10n.emailAddressUpdated, 0.2, Colors.green, Icons.check, Colors.black, const Duration(seconds: 3), context);
       }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorUpdatingEmailAddress, 0.2, Colors.redAccent, Icons.error_rounded, Colors.black, const Duration(seconds: 3), context);
+      }
+      log("Hiba az email frissítése közben! $e");
+      return false;
+      //ToastMessages.showToastMessages(
+      //         l10n.connectionErrorUpdatingEmailAddress,
+      //         0.2,
+      //         Colors.redAccent,
+      //         Icons.error_rounded,
+      //         Colors.black,
+      //         const Duration(seconds: 3),
+      //         context,
+      //       );
     }
   }
 
-  Future<void> _updatePassword(String newPassword) async {
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/account/update_password.php"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "user_id": Preferences.getUserId(),
-            "password": newPassword,
-          }),
-        );
-
-        final responseData = jsonDecode(response.body);
-
-        if (responseData["status"] == "success") {
-          //ezt nem mentjük el lokálisan, mert nem tároljuk biztonsági okok miatt
-          ToastMessages.showToastMessages(
-            l10n.passwordUpdated,
-            0.2,
-            Colors.green,
-            Icons.check_rounded,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        } else {
-          ToastMessages.showToastMessages(
-            l10n.errorUpdatingPassword,
-            0.2,
-            Colors.redAccent,
-            Icons.error,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        }
-      } catch (e) {
+  Future<bool> _updatePassword(String newPassword) async {
+    if (!mounted) return true;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await SettingsService().updatePassword(newPassword);
+      if (mounted) {
         ToastMessages.showToastMessages(
-          l10n.connectionErrorUpdatingPassword,
-          0.2,
-          Colors.redAccent,
-          Icons.error_rounded,
-          Colors.black,
-          const Duration(seconds: 3),
-          context,
-        );
-        log("Kapcsolati hiba a jelszó frissítése közben! ${e.toString()}");
+            l10n.passwordUpdated, 0.2, Colors.green, Icons.check_rounded, Colors.black, const Duration(seconds: 2), context);
       }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorUpdatingPassword, 0.2, Colors.redAccent, Icons.error, Colors.black, const Duration(seconds: 2), context);
+      }
+      log("Hiba a jelszó frissítése közben! $e");
+      return false;
+      //       ToastMessages.showToastMessages(
+      //         l10n.connectionErrorUpdatingPassword,
+      //         0.2,
+      //         Colors.redAccent,
+      //         Icons.error_rounded,
+      //         Colors.black,
+      //         const Duration(seconds: 3),
+      //         context,
+      //       );
     }
   }
 
+  Future<bool> _updateProfilePicture() async {
+    if (_selectedImage == null || !mounted) return false;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final newUrl = await SettingsService().uploadProfilePicture(Preferences.getUserId()!, _selectedImage!);
+      await Preferences.setProfilePicture(newUrl);
+
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.profilePictureUpdatedSucessfully, 0.2, Colors.green, Icons.check_rounded, Colors.black, const Duration(seconds: 2), context);
+      }
+      return true;
+    } catch (e) {
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorUpdatingProfilePicture, 0.2, Colors.redAccent, Icons.error_rounded, Colors.black, const Duration(seconds: 2), context);
+      }
+      //       ToastMessages.showToastMessages(
+      //         l10n.connectionErrorUpdatingProfilePicture,
+      //         0.2,
+      //         Colors.redAccent,
+      //         Icons.error_rounded,
+      //         Colors.black,
+      //         const Duration(seconds: 3),
+      //         context,
+      //       );
+      log("Hiba a profilkép frissítése közben! $e");
+      return false;
+    }
+  }
+
+  // --- KÉP KIVÁLASZTÁSA (BASE64 KUKA, TOAST KIEGÉSZÍTÉS) ---
   Future<void> _pickImage() async {
-    //ez a metódus felel a képkiválasztásért
+    if (_isPickingImage) return;
+    setState(() => _isPickingImage = true);
 
-    if (_isPickingImage) return; // ha már fut, akkor kilépünk
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
 
-    setState(() {
-      _isPickingImage = true;
-    });
-
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
-        if (pickedFile == null) {
-          setState(() {
-            _isPickingImage = false;
-          });
-          return;
-        }
-
-        final filePath = pickedFile.path;
-        final fileExtension = filePath.split('.').last.toLowerCase();
-        final supportedExtensions = ['svg', 'png', 'jpg', 'jpeg'];
-
-        if (!supportedExtensions.contains(fileExtension)) {
-          //ha nem támogatott formátum lett kiválasztva
-
-          ToastMessages.showToastMessages(
-            l10n.unsupportedFileFormat,
-            0.2,
-            Colors.red,
-            Icons.image,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-
-          setState(() {
-            //engedjük hogy újra megnyissa a kép választót
-            _isPickingImage = false;
-          });
-          return;
-        }
-
-        final file = File(filePath);
-        final bytes = await file.readAsBytes();
-
-        //base64-es kódolás amihez hozzátesszük a mimeType-ot
-        final base64 = base64Encode(bytes);
-
-        String mimeType;
-        switch (fileExtension) {
-          case "svg":
-            mimeType = "data:image/svg+xml;base64,";
-            break;
-          case "png":
-            mimeType = "data:image/png;base64,";
-            break;
-          case "jpg":
-            mimeType = "data:image/jpg;base64,";
-            break;
-          case "jpeg":
-            mimeType = "data:image/jpeg;base64,";
-            break;
-          default:
-            mimeType = "";
-        }
-
-        setState(() {
-          //frissítjük mind a kettő változót, és már az új profilkép fog megjelenni
-          _selectedImage = file;
-          _profilePicture = "$mimeType$base64";
-          _isPickingImage = false; // itt is vissza állítjuk
-        });
-
-        ToastMessages.showToastMessages(
-          l10n.imageSelectedCanUpdate,
-          0.2,
-          Colors.orange,
-          Icons.image,
-          Colors.black,
-          const Duration(seconds: 2),
-          context,
-        );
-
-        //frissítjük a mentés gombot
-        _onAnyFieldValid();
-
-        //frissítsük a cache-t is
-        _cacheProfileImage();
-      } catch (e) {
-        setState(() {
-          _isPickingImage = false;
-        });
-
-        ToastMessages.showToastMessages(
-          l10n.errorSelectingImage,
-          0.2,
-          Colors.redAccent,
-          Icons.image,
-          Colors.black,
-          const Duration(seconds: 2),
-          context,
-        );
-        log("Hiba kép kiválasztásánál: ${e.toString()}");
+    try {
+      final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+      if (pickedFile == null) {
+        setState(() => _isPickingImage = false);
+        return;
       }
-    }
-  }
 
-  Future<void> _updateProfilePicture() async {
-    //csak akkor frissítünk, ha volt kiválasztott kép
-    if (_selectedImage == null || _profilePicture == null) return;
+      final filePath = pickedFile.path;
+      final fileExtension = filePath.split('.').last.toLowerCase();
+      //TODO: KIZÁRÓLAG EZT A HÁRMAT ENGEDJÜK (Nincs SVG)
+      final supportedExtensions = ['png', 'jpg', 'jpeg'];
 
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/account/update_profile_picture.php"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({
-            "user_id": Preferences.getUserId(),
-            "profile_picture": _profilePicture,
-          }),
-        );
-
-        final responseData = jsonDecode(response.body);
-
-        if (responseData["status"] == "success") {
-          //lokálisan is frissítjük
-          await Preferences.setProfilePicture(_profilePicture!);
-
-          ToastMessages.showToastMessages(
-            l10n.profilePictureUpdatedSucessfully,
-            0.2,
-            Colors.green,
-            Icons.check_rounded,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        } else {
-          ToastMessages.showToastMessages(
-            l10n.errorUpdatingProfilePicture,
-            0.2,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-        }
-      } catch (e) {
+      if (!supportedExtensions.contains(fileExtension)) {
         ToastMessages.showToastMessages(
-          l10n.connectionErrorUpdatingProfilePicture,
+          "${l10n.unsupportedFileFormat} (PNG, JPG, JPEG)",
           0.2,
-          Colors.redAccent,
-          Icons.error_rounded,
+          Colors.red,
+          Icons.image,
           Colors.black,
           const Duration(seconds: 3),
           context,
         );
-        log("Kapcsolati hiba a profilkép frissítése közben! ${e.toString()}");
+        setState(() => _isPickingImage = false);
+        return;
       }
+
+      setState(() {
+        _selectedImage = File(filePath);
+        // Helyileg frissítjük a UI-t, hogy lássa az új képet (még mentés előtt)
+        _profilePicture = filePath;
+        _isPickingImage = false;
+      });
+
+      ToastMessages.showToastMessages(
+          l10n.imageSelectedCanUpdate, 0.2, Colors.orange, Icons.image, Colors.black, const Duration(seconds: 2), context);
+      _onAnyFieldValid();
+    } catch (e) {
+      setState(() => _isPickingImage = false);
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorSelectingImage, 0.2, Colors.redAccent, Icons.image, Colors.black, const Duration(seconds: 2), context);
+      }
+      log("Hiba kép kiválasztásánál: $e");
     }
+  }
+
+  // Future<void> _pickImage() async {
+  //   if (_isPickingImage) return; // ha már fut, akkor kilépünk
+  //
+  //   setState(() {
+  //     _isPickingImage = true;
+  //   });
+  //
+  //   if (context.mounted) {
+  //     final l10n = AppLocalizations.of(context)!;
+  //     try {
+  //       final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+  //       if (pickedFile == null) {
+  //         setState(() {
+  //           _isPickingImage = false;
+  //         });
+  //         return;
+  //       }
+  //
+  //       final filePath = pickedFile.path;
+  //       final fileExtension = filePath.split('.').last.toLowerCase();
+  //       final supportedExtensions = ['svg', 'png', 'jpg', 'jpeg'];
+  //
+  //       if (!supportedExtensions.contains(fileExtension)) {
+  //         //ha nem támogatott formátum lett kiválasztva
+  //
+  //         ToastMessages.showToastMessages(
+  //           l10n.unsupportedFileFormat,
+  //           0.2,
+  //           Colors.red,
+  //           Icons.image,
+  //           Colors.black,
+  //           const Duration(seconds: 2),
+  //           context,
+  //         );
+  //
+  //         setState(() {
+  //           //engedjük hogy újra megnyissa a kép választót
+  //           _isPickingImage = false;
+  //         });
+  //         return;
+  //       }
+  //
+  //       final file = File(filePath);
+  //       final bytes = await file.readAsBytes();
+  //
+  //       //base64-es kódolás amihez hozzátesszük a mimeType-ot
+  //       final base64 = base64Encode(bytes);
+  //
+  //       String mimeType;
+  //       switch (fileExtension) {
+  //         case "svg":
+  //           mimeType = "data:image/svg+xml;base64,";
+  //           break;
+  //         case "png":
+  //           mimeType = "data:image/png;base64,";
+  //           break;
+  //         case "jpg":
+  //           mimeType = "data:image/jpg;base64,";
+  //           break;
+  //         case "jpeg":
+  //           mimeType = "data:image/jpeg;base64,";
+  //           break;
+  //         default:
+  //           mimeType = "";
+  //       }
+  //
+  //       setState(() {
+  //         //frissítjük mind a kettő változót, és már az új profilkép fog megjelenni
+  //         _selectedImage = file;
+  //         _profilePicture = "$mimeType$base64";
+  //         _isPickingImage = false; // itt is vissza állítjuk
+  //       });
+  //
+  //       ToastMessages.showToastMessages(
+  //         l10n.imageSelectedCanUpdate,
+  //         0.2,
+  //         Colors.orange,
+  //         Icons.image,
+  //         Colors.black,
+  //         const Duration(seconds: 2),
+  //         context,
+  //       );
+  //
+  //       //frissítjük a mentés gombot
+  //       _onAnyFieldValid();
+  //
+  //       //frissítsük a cache-t is
+  //       _cacheProfileImage();
+  //     } catch (e) {
+  //       setState(() {
+  //         _isPickingImage = false;
+  //       });
+  //
+  //       ToastMessages.showToastMessages(
+  //         l10n.errorSelectingImage,
+  //         0.2,
+  //         Colors.redAccent,
+  //         Icons.image,
+  //         Colors.black,
+  //         const Duration(seconds: 2),
+  //         context,
+  //       );
+  //       log("Hiba kép kiválasztásánál: ${e.toString()}");
+  //     }
+  //   }
+  // }
+
+  Future<void> _deleteAccount() async {
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      await SettingsService().deleteAccount(Preferences.getUserId()!);
+      await Preferences.clearPreferences();
+
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.accountDeleted, 0.3, Colors.green, Icons.check_rounded, Colors.black, const Duration(seconds: 2), context);
+        Future.delayed(const Duration(seconds: 3), () {
+          Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginUI()), (route) => false);
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        ToastMessages.showToastMessages(
+            l10n.errorDeletingAccount, 0.3, Colors.redAccent, Icons.error_rounded, Colors.black, const Duration(seconds: 3), context);
+      }
+      log("Hiba a fiók törlése közben! $e");
+    }
+    //       ToastMessages.showToastMessages(
+    //         l10n.connectionErrorDeletingAccount,
+    //         0.2,
+    //         Colors.redAccent,
+    //         Icons.error_rounded,
+    //         Colors.black,
+    //         const Duration(seconds: 3),
+    //         context,
+    //       );
   }
 
   Future<void> _handleSave() async {
-    //ez a metódus felel az összes frissítő metódus meghívásáért
-
-    //bezárjuk a billentyűzetet
     FocusScope.of(context).unfocus();
 
     //eltároljuk az új értékekeket
@@ -521,42 +486,35 @@ class _AccountSettingState extends State<AccountSetting> {
     final newEmail = _formKey.currentState!.fields["email"]?.value?.trim() ?? '';
     final newPassword = _formKey.currentState!.fields["password"]?.value?.trim() ?? '';
 
-    //összehasonlítást végzünk az új és a régi értékek között
-    //és csak akkor engedlyük frissíteni ha nem ugyanaz (kivéve a jelszónál mert azt alapból nem tároljuk)
     final oldUsername = Preferences.getUsername();
     final oldEmail = Preferences.getEmail();
 
-    //minden frissítés után ezt igazra váltjuk
     bool somethingChanged = false;
 
-    //felhasználónév frissítése
     if (newUsername.isNotEmpty && newUsername != oldUsername && newUsername != null) {
-      await _updateUsername(newUsername);
-      somethingChanged = true;
+      final bool success = await _updateUsername(newUsername);
+      if (success) somethingChanged = true;
     }
 
-    //email frissítése
     if (newEmail.isNotEmpty && newEmail != oldEmail && newEmail != null) {
-      await _updateEmail(newEmail);
-      somethingChanged = true;
+      final bool success = await _updateEmail(newEmail);
+      if (success) somethingChanged = true;
     }
 
-    //jelszó frissítése (lehet ugyanarra változtatni a jelszót, de azt már nem tudtam megoldani hogy ne lehessen)
+    //TODO: jelszó frissítése (lehet ugyanarra változtatni a jelszót, de azt már nem tudtam megoldani hogy ne lehessen)
     if (newPassword.isNotEmpty && newPassword != null) {
-      await _updatePassword(newPassword);
-      somethingChanged = true;
+      final bool success = await _updatePassword(newPassword);
+      if (success) somethingChanged = true;
     }
 
-    //profilkép frissítése (csak azt nézzük ha van kiválasztott új kép)
     if (_selectedImage != null) {
-      await _updateProfilePicture();
-      somethingChanged = true;
+      final bool success = await _updateProfilePicture();
+      if (success) somethingChanged = true;
     }
 
     if (context.mounted) {
       final l10n = AppLocalizations.of(context)!;
       if (somethingChanged) {
-        //és ha sikerült legalább 1 módosítás akkor visszajelzést adunk a felhasználónak
         ToastMessages.showToastMessages(
           l10n.changesSaved,
           0.2,
@@ -568,24 +526,20 @@ class _AccountSettingState extends State<AccountSetting> {
         );
 
         setState(() {
-          //majd bezárunk mindent
           _isEditingUsername = false;
           _isEditingEmail = false;
           _isEditingPassword = false;
 
-          //töröljük a kiválasztott képet és kikapcsoljuk a gombot
           _selectedImage = null;
           _isFormValid = false;
         });
 
-        //illetve töröljük a mezők tartalmát
         _formKey.currentState!.reset();
         _usernameController.clear();
         _emailController.clear();
         _passwordController.clear();
         _passwordConfirmController.clear();
       } else {
-        //különben (felhasználónév és email esetében)
         ToastMessages.showToastMessages(
           l10n.cantModifySameValue,
           0.2,
@@ -596,73 +550,6 @@ class _AccountSettingState extends State<AccountSetting> {
           context,
         );
       }
-    }
-  }
-
-  Future<void> _deleteAccount() async {
-    //ez a metódus a megerősítés után törli a fiókot
-    try {
-      final response = await http.post(
-        Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/account/delete_user.php"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"user_id": Preferences.getUserId()}),
-      );
-
-      final responseData = jsonDecode(response.body);
-
-      if (responseData["success"] == true) {
-        if (context.mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessages.showToastMessages(
-            l10n.accountDeleted,
-            0.3,
-            Colors.green,
-            Icons.check_rounded,
-            Colors.black,
-            const Duration(seconds: 2),
-            context,
-          );
-
-          //lokálisan is törlünk mindent!
-          await Preferences.clearPreferences();
-
-          //és 3 másodperc várakozás után vissza írányítjuk a bejelentkezési képernyőre!
-          Future.delayed(const Duration(seconds: 3), () {
-            Navigator.pushAndRemoveUntil(
-              context,
-              MaterialPageRoute(builder: (_) => const LoginUI()),
-              (route) => false,
-            );
-          });
-        }
-      } else {
-        if (context.mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessages.showToastMessages(
-            l10n.errorDeletingAccount,
-            0.3,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        final l10n = AppLocalizations.of(context)!;
-        ToastMessages.showToastMessages(
-          l10n.connectionErrorDeletingAccount,
-          0.2,
-          Colors.redAccent,
-          Icons.error_rounded,
-          Colors.black,
-          const Duration(seconds: 3),
-          context,
-        );
-      }
-      log("Kapcsolati hiba a fiók törlése közben! ${e.toString()}");
     }
   }
 
@@ -681,6 +568,8 @@ class _AccountSettingState extends State<AccountSetting> {
 
 //DIZÁJN ELEMEK ELEJE -----------------------------------------------------------------------------
 
+  //TODO: profilkép méretező, támogatott fájlformátumok heic stb., design váltás
+  //TODO: [log] Hiba az email frissítése közben! PostgrestException(message: new row violates row-level security policy for table "users", code: 42501, details: Forbidden, hint: null)
   PreferredSizeWidget _buildAppbar() {
     final l10n = AppLocalizations.of(context)!;
     return AppBar(
@@ -745,8 +634,7 @@ class _AccountSettingState extends State<AccountSetting> {
                               errorText: l10n.passwordTooLong,
                               checkNullOrEmpty: false,
                             ),
-                            FormBuilderValidators.required(
-                                errorText: l10n.usernameCannotBeEmpty, checkNullOrEmpty: true),
+                            FormBuilderValidators.required(errorText: l10n.usernameCannotBeEmpty, checkNullOrEmpty: true),
                           ]),
                         ),
                         _buildEditableField(
@@ -765,11 +653,8 @@ class _AccountSettingState extends State<AccountSetting> {
                           },
                           validator: FormBuilderValidators.compose([
                             FormBuilderValidators.email(
-                                regex: RegExp(emailValidationRegex, unicode: true),
-                                errorText: l10n.emailAddressInvalid,
-                                checkNullOrEmpty: false),
-                            FormBuilderValidators.required(
-                                errorText: l10n.emailAddressCannotBeEmpty, checkNullOrEmpty: true),
+                                regex: RegExp(emailValidationRegex, unicode: true), errorText: l10n.emailAddressInvalid, checkNullOrEmpty: false),
+                            FormBuilderValidators.required(errorText: l10n.emailAddressCannotBeEmpty, checkNullOrEmpty: true),
                           ]),
                         ),
                       ],
@@ -805,25 +690,14 @@ class _AccountSettingState extends State<AccountSetting> {
                 letterSpacing: 1.0,
               ),
               validator: FormBuilderValidators.compose([
-                FormBuilderValidators.minLength(passwordMinLength,
-                    errorText: l10n.passwordTooShort, checkNullOrEmpty: false),
-                FormBuilderValidators.maxLength(passwordMaxLength,
-                    errorText: l10n.passwordTooLong, checkNullOrEmpty: false),
+                FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordTooShort, checkNullOrEmpty: false),
+                FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordTooLong, checkNullOrEmpty: false),
                 FormBuilderValidators.hasUppercaseChars(
-                    atLeast: 1,
-                    regex: RegExp(r'\p{Lu}', unicode: true),
-                    errorText: l10n.passwordNeedsUppercase,
-                    checkNullOrEmpty: false),
+                    atLeast: 1, regex: RegExp(r'\p{Lu}', unicode: true), errorText: l10n.passwordNeedsUppercase, checkNullOrEmpty: false),
                 FormBuilderValidators.hasLowercaseChars(
-                    atLeast: 1,
-                    regex: RegExp(r'\p{Ll}', unicode: true),
-                    errorText: l10n.passwordNeedsLowercase,
-                    checkNullOrEmpty: false),
+                    atLeast: 1, regex: RegExp(r'\p{Ll}', unicode: true), errorText: l10n.passwordNeedsLowercase, checkNullOrEmpty: false),
                 FormBuilderValidators.hasNumericChars(
-                    atLeast: 1,
-                    regex: RegExp(r'[0-9]', unicode: true),
-                    errorText: l10n.passwordNeedsNumber,
-                    checkNullOrEmpty: false),
+                    atLeast: 1, regex: RegExp(r'[0-9]', unicode: true), errorText: l10n.passwordNeedsNumber, checkNullOrEmpty: false),
               ]),
             ),
             //a jelszó megerősítése magában a _buildEditableField metódusban van!
@@ -836,42 +710,19 @@ class _AccountSettingState extends State<AccountSetting> {
     );
   }
 
+  // --- ÚJ PROFILKÉP WIDGET (A levágott bal oldal javítása) ---
   Widget _buildProfilePicture() {
     final l10n = AppLocalizations.of(context)!;
-    //cachelt képekből felépítjük a profilképet
-    Widget image;
 
-    if (_cachedSvgBytes != null) {
-      image = SvgPicture.memory(
-        _cachedSvgBytes!,
-        width: 120,
-        height: 120,
-        fit: BoxFit.fill,
-      );
-    } else if (_cachedProfileImage != null) {
-      image = ClipOval(
-        child: Image(
-          image: _cachedProfileImage!,
-          width: 120,
-          height: 120,
-          fit: BoxFit.fill,
-        ),
-      );
+    // Itt hívjuk be az új globális widgetet! (Importálni kell felülre a fájlt)
+    // Ha _selectedImage van, akkor azt mutatjuk (File), ha nincs, akkor a mentett URL-t.
+    Widget image;
+    if (_selectedImage != null) {
+      image = CircleAvatar(radius: 60, backgroundImage: FileImage(_selectedImage!));
     } else {
-      // ToastMessages.showToastMessages(
-      //   Preferences.isHungarian ? "Ismeretlen MIME-típus a profilképnél!" : "An unknown MIME type has been detected!",
-      //   0.2,
-      //   Colors.redAccent,
-      //   Icons.error,
-      //   Colors.black,
-      //   const Duration(seconds: 2),
-      //   context,
-      // );
-      log("Ismeretlen MIME-típus a profilképnél: $_profilePicture");
-      image = _defaultAvatar();
+      image = CustomAvatar(imageUrl: _profilePicture, radius: 60);
     }
 
-    //majd ezzel térünk vissza
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -881,28 +732,88 @@ class _AccountSettingState extends State<AccountSetting> {
               padding: const EdgeInsets.only(bottom: 5, top: 12),
               child: Text(
                 l10n.profilePicture,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 1,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.w600, letterSpacing: 1),
               ),
             ),
             IconButton(
-              //megnyomásra megjelenik a képválasztó
               onPressed: _pickImage,
-              icon: const Icon(
-                Icons.edit,
-                color: Colors.deepPurpleAccent,
-              ),
+              icon: const Icon(Icons.edit, color: Colors.deepPurpleAccent),
             ),
           ],
         ),
-        ClipOval(child: image),
+        // Eltűnt a ClipOval, a CustomAvatar megoldja a kört!
+        image,
       ],
     );
   }
+
+  // Widget _buildProfilePicture() {
+  //   final l10n = AppLocalizations.of(context)!;
+  //   //cachelt képekből felépítjük a profilképet
+  //   Widget image;
+  //
+  //   if (_cachedSvgBytes != null) {
+  //     image = SvgPicture.memory(
+  //       _cachedSvgBytes!,
+  //       width: 120,
+  //       height: 120,
+  //       fit: BoxFit.fill,
+  //     );
+  //   } else if (_cachedProfileImage != null) {
+  //     image = ClipOval(
+  //       child: Image(
+  //         image: _cachedProfileImage!,
+  //         width: 120,
+  //         height: 120,
+  //         fit: BoxFit.fill,
+  //       ),
+  //     );
+  //   } else {
+  //     // ToastMessages.showToastMessages(
+  //     //   Preferences.isHungarian ? "Ismeretlen MIME-típus a profilképnél!" : "An unknown MIME type has been detected!",
+  //     //   0.2,
+  //     //   Colors.redAccent,
+  //     //   Icons.error,
+  //     //   Colors.black,
+  //     //   const Duration(seconds: 2),
+  //     //   context,
+  //     // );
+  //     log("Ismeretlen MIME-típus a profilképnél: $_profilePicture");
+  //     image = _defaultAvatar();
+  //   }
+  //
+  //   //majd ezzel térünk vissza
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.center,
+  //     children: [
+  //       Row(
+  //         children: [
+  //           Padding(
+  //             padding: const EdgeInsets.only(bottom: 5, top: 12),
+  //             child: Text(
+  //               l10n.profilePicture,
+  //               style: const TextStyle(
+  //                 color: Colors.white,
+  //                 fontSize: 15,
+  //                 fontWeight: FontWeight.w600,
+  //                 letterSpacing: 1,
+  //               ),
+  //             ),
+  //           ),
+  //           IconButton(
+  //             //megnyomásra megjelenik a képválasztó
+  //             onPressed: _pickImage,
+  //             icon: const Icon(
+  //               Icons.edit,
+  //               color: Colors.deepPurpleAccent,
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //       ClipOval(child: image),
+  //     ],
+  //   );
+  // }
 
   Widget _buildEditableField({
     //meghíváskor kell megadni a mezőket (köztük a hosszú validátorokat is)
@@ -1020,8 +931,7 @@ class _AccountSettingState extends State<AccountSetting> {
                 helperStyle: null,
                 validator: FormBuilderValidators.compose([
                   FormBuilderValidators.required(errorText: l10n.fieldMustMatchPassword, checkNullOrEmpty: true),
-                  FormBuilderValidators.equal(_passwordController.text,
-                      errorText: l10n.passwordsDoesntMatch, checkNullOrEmpty: true),
+                  FormBuilderValidators.equal(_passwordController.text, errorText: l10n.passwordsDoesntMatch, checkNullOrEmpty: true),
                 ]),
               ),
             ),
@@ -1046,7 +956,7 @@ class _AccountSettingState extends State<AccountSetting> {
 
   InputDecoration _decorationForInput(
       //egységes dekoráció, kódismétlés nélkül
-      Widget? suffixIcon, //TODO: Widget? típus lett neki adva
+      Widget? suffixIcon,
       TextEditingController controller,
       String title,
       bool focusVariable,
@@ -1139,6 +1049,7 @@ class _AccountSettingState extends State<AccountSetting> {
   }
 
   void _confirmAccountDeletion() {
+    //TODO: kiemelni ezt is
     final l10n = AppLocalizations.of(context)!;
     //megerősítő felület, ha Törlés-re nyom akkor lefut a törlő metódus
     showDialog(
@@ -1148,14 +1059,14 @@ class _AccountSettingState extends State<AccountSetting> {
           backgroundColor: Colors.grey[850],
           elevation: 10,
           shadowColor: Colors.deepPurpleAccent,
-          title: AutoSizeText(
+          title: Text(
             l10n.areYouSureDeleteAccount,
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
           ),
-          content: AutoSizeText(
+          content: Text(
             l10n.actionCannotUndone,
             style: const TextStyle(
               fontSize: 18,
@@ -1197,21 +1108,21 @@ class _AccountSettingState extends State<AccountSetting> {
     );
   }
 
-  Widget _defaultAvatar() {
-    //ha nincs megfelelő profilkép (betöltve) akkor mi jelenjen meg
-    return Padding(
-      padding: const EdgeInsets.only(top: 15, right: 20),
-      child: CircleAvatar(
-        radius: 60,
-        backgroundColor: Colors.grey[600],
-        child: const Icon(
-          Icons.person,
-          size: 50,
-          color: Colors.white,
-        ),
-      ),
-    );
-  }
+  // Widget _defaultAvatar() {
+  //   //ha nincs megfelelő profilkép (betöltve) akkor mi jelenjen meg
+  //   return Padding(
+  //     padding: const EdgeInsets.only(top: 15, right: 20),
+  //     child: CircleAvatar(
+  //       radius: 60,
+  //       backgroundColor: Colors.grey[600],
+  //       child: const Icon(
+  //         Icons.person,
+  //         size: TODO: 50 helyett mostmár radius * 1,3 van
+  //         color: Colors.white,
+  //       ),
+  //     ),
+  //   );
+  // }
 
   Widget _buildDivider() {
     final l10n = AppLocalizations.of(context)!;

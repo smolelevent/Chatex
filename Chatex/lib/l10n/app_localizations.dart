@@ -296,6 +296,12 @@ abstract class AppLocalizations {
   /// **'Password recovery email sent!'**
   String get resetPasswordEmailSent;
 
+  /// No description provided for @errorSendingPasswordRecovery.
+  ///
+  /// In en, this message translates to:
+  /// **'Error sending out the password recovery email!'**
+  String get errorSendingPasswordRecovery;
+
   /// No description provided for @noUserWithThisEmailAddress.
   ///
   /// In en, this message translates to:
@@ -523,6 +529,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **' icon!'**
   String get iconEndOfSentence;
+
+  /// No description provided for @usernameTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Username already taken!'**
+  String get usernameTaken;
+
+  /// No description provided for @emailAddressTaken.
+  ///
+  /// In en, this message translates to:
+  /// **'Email address already taken!'**
+  String get emailAddressTaken;
 
   /// No description provided for @you.
   ///

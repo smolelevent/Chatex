@@ -116,6 +116,10 @@ class AppLocalizationsHu extends AppLocalizations {
   String get resetPasswordEmailSent => 'Jelszó helyreállító email kiküldve!';
 
   @override
+  String get errorSendingPasswordRecovery =>
+      'Hiba a jelszó helyreállító email kiküldésében!';
+
+  @override
   String get noUserWithThisEmailAddress =>
       'Nincs ilyen email című felhasználó!';
 
@@ -246,6 +250,12 @@ class AppLocalizationsHu extends AppLocalizations {
 
   @override
   String get iconEndOfSentence => ' ikonra kattintva!';
+
+  @override
+  String get usernameTaken => 'A felhasználónév már foglalt!';
+
+  @override
+  String get emailAddressTaken => 'Az email cím már foglalt!';
 
   @override
   String get you => 'Te: ';

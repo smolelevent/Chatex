@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:chatex/core/utils/toast_message.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
 import 'dart:developer';
-import 'dart:convert';
 import 'package:chatex/l10n/app_localizations.dart';
+import 'package:chatex/features/settings/data/settings_service.dart';
+import 'package:provider/provider.dart';
+import 'package:chatex/core/utils/locale_provider.dart';
+import 'package:chatex/core/constants/language_constants.dart';
 
 //LanguageSetting OSZTÁLY ELEJE -------------------------------------------------------------------
 class LanguageSetting extends StatefulWidget {
@@ -26,50 +28,47 @@ class _LanguageSettingState extends State<LanguageSetting> {
 //HÁTTÉR FOLYAMATOK ELEJE -------------------------------------------------------------------------
 
   Future<void> _saveLanguage(BuildContext context, String language) async {
-    //ezzel a metódussal mind lokálisan, mind az adatbázisban (következő bejelentkezéskor is) elmentjük a nyelvet
     await Preferences.setPreferredLanguage(language);
     final l10n = AppLocalizations.of(context)!;
 
     try {
-      final response = await http.post(
-        Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/settings/language/update_language.php"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "user_id": Preferences.getUserId(),
-          "language": language,
-        }),
-      );
+      //TODO: átváltja a nyelvet, de azon marad csak a dart oldalon kell
+      await SettingsService().updateLanguage(Preferences.getUserId()!, language);
 
-      final responseData = jsonDecode(response.body);
+      _selectedLanguage = language;
 
-      if (responseData["success"] == true) {
-        //megjelenítjük a pipát, és a felhasználónak visszajelzést, ha sikeres volt
-        _selectedLanguage = language;
-        if (context.mounted) {
-          ToastMessages.showToastMessages(
-            l10n.updateLanguageSuccesful,
-            0.2,
-            Colors.green,
-            Icons.check_rounded,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        }
-      } else {
-        if (context.mounted) {
-          final l10n = AppLocalizations.of(context)!;
-          ToastMessages.showToastMessages(
-            l10n.errorUpdatingLanguage,
-            0.2,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        }
+      if (context.mounted) {
+        // 1. LÉPÉS: Lekérjük az új nyelv kódját (pl. 'hu' vagy 'en')
+        final newLocaleCode = languageToLocale[language] ?? 'hu';
+
+        // 2. LÉPÉS: Szólunk a Providernek (ami a main.dart-ban ül), hogy frissítse az egész appot!
+        Provider.of<LocaleProvider>(context, listen: false).setLocale(Locale(newLocaleCode));
+
+        ToastMessages.showToastMessages(
+          l10n.updateLanguageSuccesful,
+          0.2,
+          Colors.green,
+          Icons.check_rounded,
+          Colors.black,
+          const Duration(seconds: 3),
+          context,
+        );
       }
+
+      // else {
+      //   if (context.mounted) {
+      //     final l10n = AppLocalizations.of(context)!;
+      //     ToastMessages.showToastMessages(
+      //       l10n.errorUpdatingLanguage,
+      //       0.2,
+      //       Colors.redAccent,
+      //       Icons.error_rounded,
+      //       Colors.black,
+      //       const Duration(seconds: 3),
+      //       context,
+      //     );
+      //   }
+      // }
     } catch (e) {
       if (context.mounted) {
         final l10n = AppLocalizations.of(context)!;

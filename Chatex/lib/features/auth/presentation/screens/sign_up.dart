@@ -1,14 +1,11 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/features/auth/data/auth.dart';
 import 'package:chatex/l10n/app_localizations.dart';
 import 'package:chatex/core/constants/validation_constants.dart';
-
-import '../../../../core/utils/toast_message.dart';
-import '../../../../main.dart';
+import 'package:chatex/features/auth/presentation/screens/login_screen.dart';
+import 'package:chatex/core/utils/toast_message.dart';
 
 //SignUp OSZTÁLY ELEJE ----------------------------------------------------------------------------
 class SignUp extends StatefulWidget {
@@ -99,10 +96,7 @@ class _SignUpState extends State<SignUp> {
     final passwordValue = currentState.fields['password']?.value;
     final passwordConfirmValue = currentState.fields['password_confirm']?.value;
 
-    final allFilled = usernameValue.isNotEmpty &&
-        emailValue.isNotEmpty &&
-        passwordValue.isNotEmpty &&
-        passwordConfirmValue.isNotEmpty;
+    final allFilled = usernameValue.isNotEmpty && emailValue.isNotEmpty && passwordValue.isNotEmpty && passwordConfirmValue.isNotEmpty;
 
     setState(() {
       _isRegistrationDisabled = !(isValid && allFilled);
@@ -285,9 +279,7 @@ class _SignUpState extends State<SignUp> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
-              regex: RegExp(emailValidationRegex, unicode: true),
-              errorText: l10n.emailAddressInvalid,
-              checkNullOrEmpty: false),
+              regex: RegExp(emailValidationRegex, unicode: true), errorText: l10n.emailAddressInvalid, checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
         controller: _emailController,
@@ -317,20 +309,11 @@ class _SignUpState extends State<SignUp> {
           FormBuilderValidators.minLength(passwordMinLength, errorText: l10n.passwordTooShort, checkNullOrEmpty: false),
           FormBuilderValidators.maxLength(passwordMaxLength, errorText: l10n.passwordTooLong, checkNullOrEmpty: false),
           FormBuilderValidators.hasUppercaseChars(
-              atLeast: 1,
-              regex: RegExp(r'\p{Lu}', unicode: true),
-              errorText: l10n.passwordNeedsUppercase,
-              checkNullOrEmpty: false),
+              atLeast: 1, regex: RegExp(r'\p{Lu}', unicode: true), errorText: l10n.passwordNeedsUppercase, checkNullOrEmpty: false),
           FormBuilderValidators.hasLowercaseChars(
-              atLeast: 1,
-              regex: RegExp(r'\p{Ll}', unicode: true),
-              errorText: l10n.passwordNeedsLowercase,
-              checkNullOrEmpty: false),
+              atLeast: 1, regex: RegExp(r'\p{Ll}', unicode: true), errorText: l10n.passwordNeedsLowercase, checkNullOrEmpty: false),
           FormBuilderValidators.hasNumericChars(
-              atLeast: 1,
-              regex: RegExp(r'[0-9]', unicode: true),
-              errorText: l10n.passwordNeedsNumber,
-              checkNullOrEmpty: false),
+              atLeast: 1, regex: RegExp(r'[0-9]', unicode: true), errorText: l10n.passwordNeedsNumber, checkNullOrEmpty: false),
         ]),
         focusNode: _passwordFocusNode,
         controller: _passwordController,
@@ -363,8 +346,7 @@ class _SignUpState extends State<SignUp> {
         name: "password_confirm",
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
-          FormBuilderValidators.equal(_passwordController.text,
-              errorText: l10n.passwordsDoesntMatch, checkNullOrEmpty: false),
+          FormBuilderValidators.equal(_passwordController.text, errorText: l10n.passwordsDoesntMatch, checkNullOrEmpty: false),
         ]),
         focusNode: _passwordConfirmFocusNode,
         controller: _passwordConfirmController,
@@ -409,19 +391,21 @@ class _SignUpState extends State<SignUp> {
               onPressed: _isRegistrationDisabled
                   ? null
                   : () async {
+                      _onRegisterButtonPressed(
+                          _usernameController.text.trim(), _emailController.text.trim(), _passwordController.text.trim(), widget.language);
                       //ha megnyomódott akkor lépjen ki a billentyűzetből
-                      FocusScope.of(context).unfocus();
-                      if (_formKey.currentState!.saveAndValidate()) {
-                        // await AuthService().register(
-                        //   username: _usernameController,
-                        //   email: _emailController,
-                        //   password: _passwordController,
-                        //   context: context,
-                        //   language: widget.language,
-                        // );
-                        _onRegisterButtonPressed(
-                            _usernameController, _emailController, _passwordController, widget.language);
-                      }
+                      // FocusScope.of(context).unfocus();
+                      // if (_formKey.currentState!.saveAndValidate()) {
+                      //   // await AuthService().register(
+                      //   //   username: _usernameController,
+                      //   //   email: _emailController,
+                      //   //   password: _passwordController,
+                      //   //   context: context,
+                      //   //   language: widget.language,
+                      //   // );
+                      //   _onRegisterButtonPressed(
+                      //       _usernameController.text.trim(), _emailController.text.trim(), _passwordController.text.trim(), widget.language);
+                      // }
                     },
               child: Text(
                 l10n.registrationButton,
@@ -440,37 +424,36 @@ class _SignUpState extends State<SignUp> {
     );
   }
 
-  // Egy gomb onPressed eseménye vagy egy form elküldése
-  void _onRegisterButtonPressed(TextEditingController usernameController, TextEditingController emailController,
-      TextEditingController passController, String language) async {
-    final authService = AuthService();
-    final l10n = AppLocalizations.of(context)!;
+  void _onRegisterButtonPressed(String username, String email, String password, String language) async {
+    FocusScope.of(context).unfocus();
 
-    try {
-      // UI várakozik, amíg a logika dolgozik (pl. tehetsz ide egy töltőképernyőt)
-      await authService.register(
-          email: emailController.text,
-          password: passController.text,
-          username: usernameController.text,
-          language: language);
+    if (_formKey.currentState!.saveAndValidate()) {
+      final authService = AuthService();
+      final l10n = AppLocalizations.of(context)!;
 
-      if (context.mounted) {
-        ToastMessages.showToastMessages(l10n.successfulRegistration, 0.2, Colors.green, Icons.check, Colors.black,
-            const Duration(seconds: 2), context);
-        await Future.delayed(const Duration(seconds: 2));
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginUI()));
-      }
-    } catch (e) {
-      // Ha a backend kivételt dobott, a UI lefordítja azt emberi nyelvre
-      if (context.mounted) {
-        String errorMessage = l10n.connectionErrorRegistration;
-        if (e.toString().contains('email_already_used')) {
-          errorMessage = l10n.emailAddressAlreadyUsed;
+      try {
+        //TODO: UI várakozik, amíg a logika dolgozik (pl. tehetsz ide egy töltőképernyőt)
+        await authService.register(username: username, email: email, password: password, language: language);
+
+        if (context.mounted) {
+          ToastMessages.showToastMessages(
+              l10n.successfulRegistration, 0.2, Colors.green, Icons.check, Colors.black, const Duration(seconds: 2), context);
+          await Future.delayed(const Duration(seconds: 2));
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => const LoginUI()));
         }
-        ToastMessages.showToastMessages(
-            errorMessage, 0.2, Colors.redAccent, Icons.error, Colors.black, const Duration(seconds: 2), context);
+      } catch (e) {
+        if (context.mounted) {
+          String errorMessage = l10n.error;
+          if (e.toString().contains('email_already_used')) {
+            errorMessage = l10n.emailAddressAlreadyUsed;
+          } else if (e.toString().contains('registration_failed')) {
+            errorMessage = l10n.connectionErrorRegistration;
+          } else if (e.toString().contains('connection_error')) {
+            errorMessage = l10n.connectionErrorLogin;
+          }
+          ToastMessages.showToastMessages(errorMessage, 0.2, Colors.redAccent, Icons.error, Colors.black, const Duration(seconds: 2), context);
+        }
       }
-      log("Auth regisztrációs hiba: ${e.toString()}");
     }
   }
 

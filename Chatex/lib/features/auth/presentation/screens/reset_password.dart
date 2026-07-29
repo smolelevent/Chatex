@@ -4,6 +4,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/features/auth/data/auth.dart';
 import 'package:chatex/l10n/app_localizations.dart';
 import 'package:chatex/core/constants/validation_constants.dart';
+import 'package:chatex/core/utils/toast_message.dart';
 
 //ForgotPasswordScreen OSZTÁLY ELEJE ----------------------------------------------------------------
 class ForgotPasswordScreen extends StatefulWidget {
@@ -143,9 +144,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         autovalidateMode: AutovalidateMode.onUserInteraction,
         validator: FormBuilderValidators.compose([
           FormBuilderValidators.email(
-              regex: RegExp(emailValidationRegex, unicode: true),
-              errorText: l10n.emailAddressInvalid,
-              checkNullOrEmpty: false),
+              regex: RegExp(emailValidationRegex, unicode: true), errorText: l10n.emailAddressInvalid, checkNullOrEmpty: false),
         ]),
         focusNode: _emailFocusNode,
         controller: _emailController,
@@ -197,6 +196,53 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     );
   }
 
+  void _onPasswordResetButtonPressed(String email) async {
+    if (_formKey.currentState!.saveAndValidate()) {
+      setState(() {
+        _isLoadingByResetEmail = true;
+      });
+
+      final authService = AuthService();
+      final l10n = AppLocalizations.of(context)!;
+
+      try {
+        //TODO: átírni az authos dartokat
+        await authService.resetPassword(
+          _emailController.text.trim(),
+        );
+
+        if (context.mounted) {
+          ToastMessages.showToastMessages(
+            l10n.resetPasswordEmailSent,
+            0.2,
+            Colors.green,
+            Icons.check,
+            Colors.black,
+            const Duration(seconds: 2),
+            context,
+          );
+
+          await Future.delayed(const Duration(seconds: 2));
+          Navigator.pop(context);
+        }
+      } catch (e) {
+        if (context.mounted) {
+          String errorMessage = l10n.error;
+          if (e.toString().contains('reset_error')) {
+            errorMessage = l10n.errorSendingPasswordRecovery;
+          } else if (e.toString().contains('connection_error')) {
+            errorMessage = l10n.connectionErrorResetPassword;
+          }
+          ToastMessages.showToastMessages(errorMessage, 0.2, Colors.redAccent, Icons.error, Colors.black, const Duration(seconds: 2), context);
+        }
+      } finally {
+        setState(() {
+          _isLoadingByResetEmail = false;
+        });
+      }
+    }
+  }
+
   Widget _buildPasswordResetButton() {
     final l10n = AppLocalizations.of(context)!;
     return Expanded(
@@ -222,23 +268,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     //egyik sem true alapértelmezetten
                     ? null
                     : () async {
-                        if (_formKey.currentState!.saveAndValidate()) {
-                          setState(() {
-                            _isLoadingByResetEmail = true;
-                          });
-
-                          try {
-                            await AuthService().resetPassword(
-                              email: _emailController,
-                              context: context,
-                              language: widget.language,
-                            );
-                          } finally {
-                            setState(() {
-                              _isLoadingByResetEmail = false;
-                            });
-                          }
-                        }
+                        _onPasswordResetButtonPressed(_emailController.text.trim());
                       },
                 child: Text(
                   l10n.resetPasswordButton,

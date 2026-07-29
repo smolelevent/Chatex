@@ -116,6 +116,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get resetPasswordEmailSent => 'Password recovery email sent!';
 
   @override
+  String get errorSendingPasswordRecovery =>
+      'Error sending out the password recovery email!';
+
+  @override
   String get noUserWithThisEmailAddress => 'No user with this email address!';
 
   @override
@@ -246,6 +250,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iconEndOfSentence => ' icon!';
+
+  @override
+  String get usernameTaken => 'Username already taken!';
+
+  @override
+  String get emailAddressTaken => 'Email address already taken!';
 
   @override
   String get you => 'You: ';

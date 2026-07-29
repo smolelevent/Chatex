@@ -4,8 +4,8 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
-import 'package:chatex/features/friends/presentation/friend_requests.dart';
-import 'package:chatex/features/friends/presentation/manage_friends.dart';
+import 'package:chatex/features/friends/presentation/screens/friend_requests.dart';
+import 'package:chatex/features/friends/presentation/screens/manage_friends.dart';
 import 'package:chatex/core/constants/validation_constants.dart';
 import 'package:chatex/core/utils/toast_message.dart';
 import 'package:chatex/core/constants/api_constants.dart';
@@ -67,6 +67,7 @@ class _PeopleState extends State<People> {
     super.dispose();
   }
 
+  //TODO: ezeket is átírni a a friend_service.dart-ba
   Future<void> _loadFriendRequestCount() async {
     try {
       // Supabase Count lekérdezés: Villámgyors és nem tölti le magukat az adatokat, csak a számot.
@@ -107,11 +108,8 @@ class _PeopleState extends State<People> {
       }
 
       try {
-        final responseData = await supabase
-            .from('users')
-            .select('id, username, profile_picture')
-            .ilike('username', '%$query%')
-            .neq('id', Preferences.getUserId()!);
+        final responseData =
+            await supabase.from('users').select('id, username, profile_picture').ilike('username', '%$query%').neq('id', Preferences.getUserId()!);
 
         setState(() {
           _userSearchResults = responseData;
@@ -141,10 +139,8 @@ class _PeopleState extends State<People> {
     final myId = Preferences.getUserId()!;
     try {
       // 1. Megnézzük, barátok-e már
-      final friendRes = await supabase
-          .from('friends')
-          .select('id')
-          .or('and(user_id.eq.$myId,friend_id.eq.$friendId),and(user_id.eq.$friendId,friend_id.eq.$myId)');
+      final friendRes =
+          await supabase.from('friends').select('id').or('and(user_id.eq.$myId,friend_id.eq.$friendId),and(user_id.eq.$friendId,friend_id.eq.$myId)');
 
       if (friendRes.isNotEmpty) {
         _friendStatusMap[friendId] = "already_friends";
@@ -188,9 +184,7 @@ class _PeopleState extends State<People> {
   Future<void> _sendFriendRequest(int friendId) async {
     try {
       // Sima adatbázis beszúrás (Insert)
-      await supabase
-          .from('friend_requests')
-          .insert({"sender_id": Preferences.getUserId(), "receiver_id": friendId, "status": "pending"});
+      await supabase.from('friend_requests').insert({"sender_id": Preferences.getUserId(), "receiver_id": friendId, "status": "pending"});
 
       setState(() {
         _friendStatusMap[friendId] = "pending_request";
@@ -469,51 +463,23 @@ class _PeopleState extends State<People> {
       ),
     );
   }
+//TODO: kapcsolati hiba a barátküldés közben
 
+  // --- ÚJ NETWORK IMAGE PROFILKÉP METÓDUS ---
   Widget _buildProfilePicture(String? profilePicture) {
-    //base64 alapján
-    Widget profileImage;
-
-    if (profilePicture != null && profilePicture.isNotEmpty) {
-      if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
-        final svgString = utf8.decode(base64Decode(profilePicture.split(",")[1]));
-        profileImage = SvgPicture.string(
-          svgString,
-          width: 60,
-          height: 60,
-          fit: BoxFit.fill,
-        );
-      } else if (profilePicture.startsWith("data:image/")) {
-        profileImage = Image.memory(
-          base64Decode(profilePicture.split(",")[1]),
-          width: 60,
-          height: 60,
-          fit: BoxFit.fill,
-        );
-      } else {
-        profileImage = CircleAvatar(
-          radius: 30,
-          backgroundColor: Colors.grey[600],
-          child: const Icon(
-            Icons.person,
-            size: 40,
-            color: Colors.white,
-          ),
-        );
-      }
+    if (profilePicture != null && profilePicture.startsWith('http')) {
+      return CircleAvatar(
+        radius: 30,
+        backgroundImage: NetworkImage(profilePicture),
+        backgroundColor: Colors.transparent,
+      );
     } else {
-      profileImage = CircleAvatar(
+      return CircleAvatar(
         radius: 30,
         backgroundColor: Colors.grey[600],
-        child: const Icon(
-          Icons.person,
-          size: 40,
-          color: Colors.white,
-        ),
+        child: const Icon(Icons.person, size: 40, color: Colors.white),
       );
     }
-
-    return profileImage;
   }
 
   Widget _searchResultsWidget() {

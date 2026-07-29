@@ -4,22 +4,22 @@ import 'package:chatex/features/chat/presentation/screens/load_chats.dart';
 import 'package:chatex/features/chat/presentation/screens/start_chat.dart';
 import 'package:chatex/core/presentation/widgets/sidebar.dart';
 import 'package:chatex/core/presentation/widgets/bottom_nav_bar.dart';
-import 'package:chatex/features/friends/presentation/people.dart';
+import 'package:chatex/features/friends/presentation/screens/people.dart';
 import 'package:chatex/features/groups/presentation/screens/groups.dart';
-import 'package:chatex/features/settings/presentation/settings.dart';
+import 'package:chatex/features/settings/presentation/screens/settings.dart';
 import 'package:chatex/features/groups/presentation/widgets/dummy_group.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
 import 'package:chatex/l10n/app_localizations.dart';
 
-//ChatUI OSZTÁLY ELEJE ----------------------------------------------------------------------------
-class ChatUI extends StatefulWidget {
-  const ChatUI({super.key});
+//HomeScreen OSZTÁLY ELEJE ----------------------------------------------------------------------------
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<ChatUI> createState() => _ChatUIState();
+  State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _ChatUIState extends State<ChatUI> {
+class _HomeScreenState extends State<HomeScreen> {
 //OSZTÁLYON BELÜLI VÁLTOZÓK ELEJE -----------------------------------------------------------------
 
   late SidebarXController _sidebarController;
@@ -176,4 +176,4 @@ class _ChatUIState extends State<ChatUI> {
 //DIZÁJN ELEMEK VÉGE ------------------------------------------------------------------------------
 }
 
-//ChatUI OSZTÁLY VÉGE -----------------------------------------------------------------------------
+//HomeScreen OSZTÁLY VÉGE -----------------------------------------------------------------------------

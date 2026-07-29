@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
@@ -7,6 +6,7 @@ import 'package:chatex/core/utils/toast_message.dart';
 import 'dart:convert';
 import 'dart:developer';
 import 'package:chatex/l10n/app_localizations.dart';
+import 'package:chatex/features/friends/data/friend_service.dart';
 
 //ManageFriends OSZTÁLY ELEJE --------------------------------------------------------------------
 class ManageFriends extends StatefulWidget {
@@ -33,25 +33,19 @@ class _ManageFriendsState extends State<ManageFriends> {
   }
 
   Future<void> _fetchFriends() async {
-    //ez a metódus a képernyő betöltésekor lekéri a barátokat, majd elmenti azt
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse('http://10.0.2.2/ChatexProject/chatex_phps/friends/get/get_friends.php'),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"user_id": Preferences.getUserId()}),
-        );
+    final service = FriendService();
 
-        final responseData = jsonDecode(response.body);
-        if (responseData["success"] == true) {
-          setState(() {
-            //mentsük el a barátokat és a töltést kapcsoljuk ki
-            _friends = responseData["friends"];
-            _isLoading = false;
-          });
-        }
-      } catch (e) {
+    try {
+      final friendsList = await service.fetchFriends(Preferences.getUserId()!);
+      if (mounted) {
+        setState(() {
+          _friends = friendsList;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ToastMessages.showToastMessages(
           l10n.connectionErrorLoadingFriends,
           0.2,
@@ -61,53 +55,34 @@ class _ManageFriendsState extends State<ManageFriends> {
           const Duration(seconds: 3),
           context,
         );
-        log("Kapcsolati hiba a barátok lekérésénél! ${e.toString()}");
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
+      log("Kapcsolati hiba a barátok lekérésénél! ${e.toString()}");
     }
   }
 
   Future<void> _removeFriend(int friendId) async {
-    //ez a metódus kitörli a felhasználó és a barát oldaláról is az egymással lévő barátságot
-    if (context.mounted) {
-      final l10n = AppLocalizations.of(context)!;
-      try {
-        final response = await http.post(
-          Uri.parse("http://10.0.2.2/ChatexProject/chatex_phps/friends/set/remove_friend.php"),
-          headers: {"Content-Type": "application/json"},
-          body: jsonEncode({"user_id": Preferences.getUserId(), "friend_id": friendId}),
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final service = FriendService();
+
+    try {
+      await service.removeFriend(Preferences.getUserId()!, friendId);
+      if (mounted) {
+        setState(() => _friends.removeWhere((f) => f["id"] == friendId));
+        //TODO: errorWhileDeletingFriend nincs itt
+        ToastMessages.showToastMessages(
+          l10n.friendRemoved,
+          0.2,
+          Colors.green,
+          Icons.check,
+          Colors.black,
+          const Duration(seconds: 3),
+          context,
         );
-
-        final responseData = jsonDecode(response.body);
-
-        if (responseData["success"] == true) {
-          setState(() {
-            //helyileg is kitöröljük
-            _friends.removeWhere((f) => f["id"] == friendId);
-          });
-          ToastMessages.showToastMessages(
-            l10n.friendRemoved,
-            0.2,
-            Colors.green,
-            Icons.check,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        } else {
-          ToastMessages.showToastMessages(
-            l10n.errorWhileDeletingFriend,
-            0.2,
-            Colors.redAccent,
-            Icons.error_rounded,
-            Colors.black,
-            const Duration(seconds: 3),
-            context,
-          );
-        }
-      } catch (e) {
+      }
+    } catch (e) {
+      if (mounted) {
         ToastMessages.showToastMessages(
           l10n.connectionErrorRemovingFriend,
           0.2,
@@ -117,8 +92,8 @@ class _ManageFriendsState extends State<ManageFriends> {
           const Duration(seconds: 3),
           context,
         );
-        log("Kapcsolati hiba a barát törlése közben! ${e.toString()}");
       }
+      log("Kapcsolati hiba a barát törlése közben! ${e.toString()}");
     }
   }
 
@@ -163,39 +138,63 @@ class _ManageFriendsState extends State<ManageFriends> {
     );
   }
 
-  Widget _buildProfilePicture(String? profilePicture) {
-    //base64 alapján
-    Widget profileImage;
+  // Widget _buildProfilePicture(String? profilePicture) {
+  //   //base64 alapján
+  //   Widget profileImage;
+  //
+  //   if (profilePicture != null && profilePicture.isNotEmpty) {
+  //     if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
+  //       final svgString = utf8.decode(base64Decode(profilePicture.split(",")[1]));
+  //       profileImage = SvgPicture.string(
+  //         svgString,
+  //         width: 50,
+  //         height: 50,
+  //         fit: BoxFit.fill,
+  //       );
+  //     } else if (profilePicture.startsWith("data:image/")) {
+  //       profileImage = Image.memory(
+  //         base64Decode(profilePicture.split(",")[1]),
+  //         width: 50,
+  //         height: 50,
+  //         fit: BoxFit.fill,
+  //       );
+  //     } else {
+  //       profileImage = CircleAvatar(
+  //         radius: 25,
+  //         backgroundColor: Colors.grey[600],
+  //         child: const Icon(
+  //           Icons.person,
+  //           size: 35,
+  //           color: Colors.white,
+  //         ),
+  //       );
+  //     }
+  //   } else {
+  //     profileImage = CircleAvatar(
+  //       radius: 25,
+  //       backgroundColor: Colors.grey[600],
+  //       child: const Icon(
+  //         Icons.person,
+  //         size: 35,
+  //         color: Colors.white,
+  //       ),
+  //     );
+  //   }
+  //
+  //   return profileImage;
+  // }
 
-    if (profilePicture != null && profilePicture.isNotEmpty) {
-      if (profilePicture.startsWith("data:image/svg+xml;base64,")) {
-        final svgString = utf8.decode(base64Decode(profilePicture.split(",")[1]));
-        profileImage = SvgPicture.string(
-          svgString,
-          width: 50,
-          height: 50,
-          fit: BoxFit.fill,
-        );
-      } else if (profilePicture.startsWith("data:image/")) {
-        profileImage = Image.memory(
-          base64Decode(profilePicture.split(",")[1]),
-          width: 50,
-          height: 50,
-          fit: BoxFit.fill,
-        );
-      } else {
-        profileImage = CircleAvatar(
-          radius: 25,
-          backgroundColor: Colors.grey[600],
-          child: const Icon(
-            Icons.person,
-            size: 35,
-            color: Colors.white,
-          ),
-        );
-      }
+  // --- ÚJ NETWORK IMAGE PROFILKÉP METÓDUS (Base64 kuka!) ---
+  Widget _buildProfilePicture(String? profilePicture) {
+    if (profilePicture != null && profilePicture.startsWith('http')) {
+      return CircleAvatar(
+        radius: 25,
+        backgroundImage: NetworkImage(profilePicture),
+        backgroundColor: Colors.transparent,
+      );
     } else {
-      profileImage = CircleAvatar(
+      // Visszaadjuk a te eredeti alapértelmezett ikonodat
+      return CircleAvatar(
         radius: 25,
         backgroundColor: Colors.grey[600],
         child: const Icon(
@@ -205,8 +204,6 @@ class _ManageFriendsState extends State<ManageFriends> {
         ),
       );
     }
-
-    return profileImage;
   }
 
   Widget _buildManageFriendsList() {

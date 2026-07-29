@@ -1,9 +1,11 @@
+import 'package:chatex/features/auth/presentation/screens/login_screen.dart';
+import 'package:chatex/features/home/presentation/screens/home_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:sidebarx/sidebarx.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:chatex/core/local_storage/preferences.dart';
-//import 'package:chatex/core/utils/toast_message.dart';
+import 'package:chatex/core/utils/toast_message.dart';
 import 'package:chatex/features/auth/data/auth.dart';
 import 'package:chatex/l10n/app_localizations.dart';
 import 'dart:developer';
@@ -99,6 +101,78 @@ class _ChatSidebarState extends State<ChatSidebar> {
     // }
   }
 
+  AlertDialog _buildLogOutWidget() {
+    final l10n = AppLocalizations.of(context)!;
+    return AlertDialog(
+      backgroundColor: Colors.grey[850],
+      elevation: 10,
+      shadowColor: Colors.deepPurpleAccent,
+      title: Text(
+        l10n.logout,
+        style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+      ),
+      content: Text(
+        l10n.areYouSureLogout,
+        style: const TextStyle(fontSize: 18, color: Colors.white, letterSpacing: 1),
+      ),
+      actions: [
+        TextButton(
+          child: Text(
+            l10n.cancel,
+            style: const TextStyle(color: Colors.white, letterSpacing: 1),
+          ),
+          onPressed: () {
+            Navigator.pop(context, false);
+          },
+        ),
+        TextButton(
+          child: Text(
+            l10n.yes,
+            style: const TextStyle(color: Colors.redAccent, letterSpacing: 1),
+          ),
+          onPressed: () {
+            Navigator.pop(context, true);
+          },
+        ),
+      ],
+    );
+  }
+
+  void _onLogoutButtonPressed() async {
+    final l10n = AppLocalizations.of(context)!;
+
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return _buildLogOutWidget();
+      },
+    );
+
+    if (shouldLogout == true) {
+      final authService = AuthService();
+
+      try {
+        await authService.logOut();
+
+        if (!context.mounted) return;
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginUI()),
+          (route) => false,
+        );
+      } catch (e) {
+        if (mounted) {
+          String errorMessage = l10n.error;
+          if (e.toString().contains('logout_error')) {
+            errorMessage = l10n.connectionErrorLogout;
+          }
+
+          ToastMessages.showToastMessages(errorMessage, 0.2, Colors.redAccent, Icons.error, Colors.black, const Duration(seconds: 3), context);
+        }
+      }
+    }
+  }
+
 //HÁTTÉR FOLYAMATOK VÉGE --------------------------------------------------------------------------
 
   @override
@@ -124,88 +198,30 @@ class _ChatSidebarState extends State<ChatSidebar> {
           headerDivider: _buildHeaderDivider(),
           items: [
             //a tényleges tartalma a sidebarnak, ahova lehet navigálni
-            _buildSidebarOption(locale, "Chatek", "Chats", Icons.chat_rounded, Colors.deepPurpleAccent, () {
+            _buildSidebarOption(locale, l10n.chats, Icons.chat_rounded, Colors.deepPurpleAccent, () {
               widget.sidebarXController.selectIndex(0);
               widget.onSelectPage(0, isSidebarPage: false);
               Navigator.pop(context);
             }),
 
-            _buildSidebarOption(locale, "Csoportok", "Groups", Icons.groups_rounded, Colors.lightBlue, () {
+            _buildSidebarOption(locale, l10n.groups, Icons.groups_rounded, Colors.lightBlue, () {
               widget.sidebarXController.selectIndex(2);
               widget.onSelectPage(2, isSidebarPage: true);
               Navigator.pop(context);
             }),
           ],
           footerItems: [
-            _buildSidebarOption(locale, "Beállítások", "Settings", Icons.settings_rounded, Colors.teal, () {
+            _buildSidebarOption(locale, l10n.settings, Icons.settings_rounded, Colors.teal, () {
               widget.sidebarXController.selectIndex(3);
               widget.onSelectPage(3, isSidebarPage: true);
               Navigator.pop(context);
             }),
             _buildSidebarOption(
               locale,
-              "Kijelentkezés",
-              "Logout",
+              l10n.logout,
               Icons.logout_rounded,
               Colors.redAccent,
-              //onTap esemény:
-              () async {
-                final shouldLogout = await showDialog<bool>(
-                  context: context,
-                  builder: (context) {
-                    return AlertDialog(
-                      backgroundColor: Colors.grey[850],
-                      elevation: 10,
-                      shadowColor: Colors.deepPurpleAccent,
-                      title: AutoSizeText(
-                        l10n.logout,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      content: AutoSizeText(
-                        l10n.areYouSureLogout,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                        ),
-                      ),
-                      actions: [
-                        TextButton(
-                          child: Text(
-                            l10n.cancel,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context, false);
-                          },
-                        ),
-                        TextButton(
-                          child: Text(
-                            l10n.yes,
-                            style: const TextStyle(
-                              color: Colors.redAccent,
-                              letterSpacing: 1,
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.pop(context, true);
-                          },
-                        ),
-                      ],
-                    );
-                  },
-                );
-
-                if (shouldLogout == true) {
-                  await AuthService().logOut(context: context);
-                }
-              },
+              _onLogoutButtonPressed,
             ),
           ],
           theme: _sidebarXTheme(),
@@ -246,7 +262,7 @@ class _ChatSidebarState extends State<ChatSidebar> {
     );
   }
 
-  //TODO: base64
+  //TODO: elcsúszik a profilkép
   Widget _buildProfileImage() {
     final String? image = Preferences.getProfilePicture();
     log("MIT AD ÁT PROFILKÉPNEK${Preferences.getProfilePicture()}");
@@ -256,21 +272,15 @@ class _ChatSidebarState extends State<ChatSidebar> {
     }
 
     Widget imageWidget;
-    if (image.startsWith("data:image/svg+xml;base64,")) {
-      final svgString = utf8.decode(base64Decode(image.split(",")[1]));
-      imageWidget = SvgPicture.string(
-        svgString,
+
+    if (image.startsWith('http')) {
+      imageWidget = Image.network(
+        image,
         width: 120,
         height: 120,
         fit: BoxFit.fill,
-      );
-    } else if (image.startsWith("data:image/")) {
-      final imageBytes = base64Decode(image.split(",")[1]);
-      imageWidget = Image.memory(
-        imageBytes,
-        width: 120, //(width, height)*2 = radius
-        height: 120,
-        fit: BoxFit.fill,
+        // Hiba esetén alap ikon
+        errorBuilder: (context, error, stackTrace) => _defaultAvatar(),
       );
     } else {
       //errort kapunk ha túl gyorsan töltjük be a sidebar-t ezért kell a postFrameCallback
@@ -350,10 +360,9 @@ class _ChatSidebarState extends State<ChatSidebar> {
     );
   }
 
-  SidebarXItem _buildSidebarOption(
-      String locale, String hunText, String engText, IconData icon, Color iconColor, FutureOr<void> Function()? onTap) {
+  SidebarXItem _buildSidebarOption(String locale, String text, IconData icon, Color iconColor, FutureOr<void> Function()? onTap) {
     return SidebarXItem(
-      label: locale == "Magyar" ? hunText : engText,
+      label: text,
       iconBuilder: (context, isSelected) {
         return Icon(
           icon,
